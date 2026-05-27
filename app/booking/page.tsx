@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 import { buildBookingComUrl } from "@/lib/checkout";
-import { fetchLiteApiHotelById, fetchLiteApiHotelPrice } from "@/lib/liteapi";
+import { getHotelById } from "@/lib/hotels-data";
 
 type BookingPageProps = {
   searchParams: Promise<{
@@ -28,28 +28,8 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
   const checkOut = params.checkOut || "";
   const guests = Number(params.guests || "2") || 2;
 
-  const hotel = hotelId ? await fetchLiteApiHotelById(hotelId) : null;
-
-  let nightlyPrice: number | null = null;
-  if (hotel && checkIn && checkOut) {
-    try {
-      nightlyPrice = await fetchLiteApiHotelPrice({
-        hotelId: hotel.id,
-        countryCode: hotel.country,
-        checkIn,
-        checkOut,
-        guests,
-      });
-    } catch (error) {
-      console.error("Booking page price fetch failed", {
-        hotelId,
-        checkIn,
-        checkOut,
-        guests,
-        error: error instanceof Error ? error.message : String(error),
-      });
-    }
-  }
+  const hotel = hotelId ? getHotelById(hotelId) : null;
+  const nightlyPrice = hotel?.pricePerNight ?? null;
 
   const nights = checkIn && checkOut
     ? Math.max(1, Math.ceil((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / (1000 * 60 * 60 * 24)))
@@ -160,7 +140,7 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             )}
 
             <Link
-              href={`/hotels/${hotel.id}?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guests}`}
+              href={`/hotel/${hotel.id}?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}&guests=${guests}`}
               className="btn-ghost block w-full text-center text-sm"
             >
               ← Back to hotel details

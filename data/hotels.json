@@ -1,0 +1,186 @@
+[
+  {
+    "id": "bali-aura-ubud",
+    "name": "Aura Ubud Sanctuary",
+    "location": "Jungle Valley Estate",
+    "city": "Bali",
+    "country": "Indonesia",
+    "pricePerNight": 1480,
+    "rating": 4.9,
+    "reviews": 312,
+    "image": "https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1439066615861-d1af74d74000?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Private Pool", "Holistic Spa", "Sunrise Yoga", "Butler Service", "Organic Dining"],
+    "description": "A serene hillside retreat of teak pavilions, river mist mornings, and deeply attentive Balinese hospitality.",
+    "reviewsSummary": [
+      "The quiet is extraordinary. Every corner feels intentional.",
+      "Service is graceful and invisible, exactly what luxury should feel like.",
+      "We booked three nights and immediately extended to seven."
+    ]
+  },
+  {
+    "id": "tokyo-atelier-ginza",
+    "name": "Atelier Ginza House",
+    "location": "Ginza Boulevard",
+    "city": "Tokyo",
+    "country": "Japan",
+    "pricePerNight": 1720,
+    "rating": 4.8,
+    "reviews": 228,
+    "image": "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1528164344705-47542687000d?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1554797589-7241bb691973?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Skyline Onsen", "Michelin Lounge", "Private Transfers", "Wellness Studio", "Tea Sommelier"],
+    "description": "Contemporary Japanese calm above the city lights, crafted in stone, wood, and precise hospitality rituals.",
+    "reviewsSummary": [
+      "Every detail is quietly perfect, from scent to lighting.",
+      "Incredible location with complete privacy once inside.",
+      "The skyline onsen at dusk is unforgettable."
+    ]
+  },
+  {
+    "id": "swiss-alps-verdant-ridge",
+    "name": "Verdant Ridge Chalet",
+    "location": "Glacier Overlook",
+    "city": "Swiss Alps",
+    "country": "Switzerland",
+    "pricePerNight": 1890,
+    "rating": 4.9,
+    "reviews": 196,
+    "image": "https://images.unsplash.com/photo-1508264165352-258a6f82b35f?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1516483638261-f4dbaf036963?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1499696010181-8b8f2f5344d0?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1483683804023-6ccdb62f86ef?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Alpine Spa", "Ski Concierge", "Fireplace Suites", "Heli Arrival", "Farm-to-Table Dining"],
+    "description": "A high-altitude hideaway where panoramic snowfields meet warm timber interiors and deeply personal service.",
+    "reviewsSummary": [
+      "Feels like your own private mountain world.",
+      "Warm, elegant, and impossibly beautiful in winter light.",
+      "Best sleep we have had in years."
+    ]
+  },
+  {
+    "id": "dubai-noor-reserve",
+    "name": "Noor Dune Reserve",
+    "location": "Desert Crescent",
+    "city": "Dubai",
+    "country": "UAE",
+    "pricePerNight": 2110,
+    "rating": 4.8,
+    "reviews": 341,
+    "image": "https://images.unsplash.com/photo-1518684079-3c830dcef090?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1518780664697-55e3ad937233?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Desert Villas", "Private Cinema", "Infinity Pool", "Signature Hammam", "24h Concierge"],
+    "description": "Sculpted desert architecture with cinematic city views, curated privacy, and refined Arabian hospitality.",
+    "reviewsSummary": [
+      "A masterpiece of architecture and atmosphere.",
+      "The villa pool at sunset feels surreal.",
+      "Personalized concierge was flawless."
+    ]
+  },
+  {
+    "id": "santorini-lumen-cliff",
+    "name": "Lumen Cliff House",
+    "location": "Caldera Edge",
+    "city": "Santorini",
+    "country": "Greece",
+    "pricePerNight": 1640,
+    "rating": 4.9,
+    "reviews": 287,
+    "image": "https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1505765050516-f72dcac9c60f?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1571847140471-1d7766e825ea?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Caldera Suites", "Sunset Deck", "Aegean Spa", "Boat Charters", "Wine Cellar"],
+    "description": "Whitewashed suites suspended above the Aegean, designed for long sunsets, stillness, and sea air.",
+    "reviewsSummary": [
+      "The sunsets are even better than the photos.",
+      "Elegant simplicity done perfectly.",
+      "Romantic, calm, and exceptionally polished."
+    ]
+  },
+  {
+    "id": "paris-maison-rive",
+    "name": "Maison Rive Noire",
+    "location": "Left Bank",
+    "city": "Paris",
+    "country": "France",
+    "pricePerNight": 1560,
+    "rating": 4.7,
+    "reviews": 264,
+    "image": "https://images.unsplash.com/photo-1549144511-f099e773c147?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1522093007474-d86e9bf7ba6f?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Private Salon", "Chef's Table", "Signature Fragrance", "Art Concierge", "River Transfers"],
+    "description": "A quietly opulent Parisian residence blending haute design, curated art, and intimate service.",
+    "reviewsSummary": [
+      "Feels more like an elegant private home than a hotel.",
+      "Impeccable style and incredibly warm staff.",
+      "Perfect base for a refined Paris stay."
+    ]
+  },
+  {
+    "id": "maldives-azure-atoll",
+    "name": "Azure Atoll Retreat",
+    "location": "North Coral Atoll",
+    "city": "Maldives",
+    "country": "Maldives",
+    "pricePerNight": 2380,
+    "rating": 5.0,
+    "reviews": 402,
+    "image": "https://images.unsplash.com/photo-1573843981267-be1999ff37cd?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1514282401047-d79a71a590e8?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1564501049412-61c2a3083791?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Overwater Villas", "Marine Dining", "Diving Studio", "Sunset Cruises", "Butler Service"],
+    "description": "An overwater sanctuary of turquoise horizons, spacious villas, and seamless island living.",
+    "reviewsSummary": [
+      "Absolute paradise with world-class service.",
+      "The water villa experience is magical.",
+      "Every meal and every moment felt curated."
+    ]
+  },
+  {
+    "id": "kyoto-shibui-garden",
+    "name": "Shibui Garden Ryokan",
+    "location": "Higashiyama Quarter",
+    "city": "Kyoto",
+    "country": "Japan",
+    "pricePerNight": 1390,
+    "rating": 4.8,
+    "reviews": 219,
+    "image": "https://images.unsplash.com/photo-1492571350019-22de08371fd3?auto=format&fit=crop&w=1800&q=82",
+    "gallery": [
+      "https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1478436127897-769e1b3f0f36?auto=format&fit=crop&w=1400&q=82",
+      "https://images.unsplash.com/photo-1542051841857-5f90071e7989?auto=format&fit=crop&w=1400&q=82"
+    ],
+    "amenities": ["Tatami Suites", "Kaiseki Dining", "Stone Bath", "Tea Ceremony", "Garden Views"],
+    "description": "A contemporary ryokan experience with refined Kyoto craftsmanship, seasonal cuisine, and meditative pace.",
+    "reviewsSummary": [
+      "Pure tranquility and beautiful Japanese craftsmanship.",
+      "The tea ceremony and garden setting were exceptional.",
+      "A deeply restorative stay from start to finish."
+    ]
+  }
+]

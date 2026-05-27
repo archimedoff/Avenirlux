@@ -8,7 +8,7 @@ type HotelCardProps = {
 };
 
 export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
-  const href = detailQueryString ? `/hotels/${hotel.id}?${detailQueryString}` : `/hotels/${hotel.id}`;
+  const href = detailQueryString ? `/hotel/${hotel.id}?${detailQueryString}` : `/hotel/${hotel.id}`;
   const rating = hotel.rating || 0;
 
   return (

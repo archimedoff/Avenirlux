@@ -11,4 +11,5 @@ export type Hotel = {
   gallery: string[];
   amenities: string[];
   description: string;
+  reviewsSummary: string[];
 };
