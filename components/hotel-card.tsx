@@ -23,7 +23,7 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
           <img
             src={hotel.image}
             alt={hotel.name}
-            className="h-full w-full object-cover transition-[transform,filter] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] group-hover:brightness-[1.03]"
+            className="luxury-image-fade h-full w-full object-cover transition-[transform,filter] duration-[850ms] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.06] group-hover:brightness-[1.03]"
             loading="lazy"
           />
           <div
@@ -42,6 +42,12 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[0.6875rem] font-semibold tracking-wide text-white shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-md">
               ★ {rating.toFixed(1)}
             </span>
+            <span
+              aria-label="Favorite stay"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white/90 backdrop-blur-md transition-[transform,background-color,border-color] duration-300 group-hover:scale-105 group-hover:border-white/60 group-hover:bg-black/35"
+            >
+              ♡
+            </span>
           </div>
           <div className="absolute bottom-0 left-0 right-0 z-[1] flex items-end justify-between gap-3 p-4 sm:p-5">
             <p className="max-w-[65%] font-display text-lg font-medium leading-snug tracking-[-0.02em] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-xl">
@@ -52,7 +58,7 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             </span>
           </div>
         </div>
-        <div className="space-y-3.5 p-5 sm:space-y-4 sm:p-6">
+        <div className="space-y-4 p-5 sm:space-y-[1.05rem] sm:p-6">
           <p className="text-sm leading-relaxed text-[var(--foreground-muted)]">
             {hotel.location}, {hotel.city}
           </p>

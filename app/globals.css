@@ -105,6 +105,18 @@ body {
   }
 }
 
+@keyframes hero-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.52;
+    transform: scale(1.03);
+  }
+}
+
 .animate-fade-up {
   animation: fade-up 0.7s var(--ease-out-expo) both;
 }
@@ -119,6 +131,16 @@ body {
 
 .animate-fade-up-delay-3 {
   animation: fade-up 0.7s var(--ease-out-expo) 0.24s both;
+}
+
+.luxury-image-fade {
+  animation: fade-in 0.9s var(--ease-luxury) both;
+}
+
+.hero-luxury-glow {
+  background:
+    radial-gradient(ellipse 110% 70% at 50% 5%, rgba(255, 255, 255, 0.1), transparent 60%),
+    radial-gradient(ellipse 70% 45% at 80% 85%, rgba(255, 255, 255, 0.05), transparent 58%);
 }
 
 .glass-card {
@@ -217,6 +239,10 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .hotel-card:hover .hotel-card-media::after {
     animation: luxury-shine 1s var(--ease-luxury) forwards;
+  }
+
+  .hero-luxury-glow {
+    animation: hero-glow-pulse 4.5s var(--ease-luxury) infinite;
   }
 }
 

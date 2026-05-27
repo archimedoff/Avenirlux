@@ -43,16 +43,17 @@ export default function HomePage() {
           fill
           priority
           sizes="100vw"
-          className="object-cover transition-[transform,filter] duration-[1.6s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.02]"
+          className="luxury-image-fade object-cover transition-[transform,filter] duration-[1.9s] ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:brightness-[1.05]"
         />
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#1c1917]/55 via-[#1c1917]/25 to-[#0c0a09]/85"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-b from-[#080807]/78 via-[#110f0e]/48 to-[#050404]/90"
           aria-hidden
         />
         <div
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_70%_at_50%_0%,rgba(255,255,255,0.08)_0%,transparent_55%)]"
           aria-hidden
         />
+        <div className="hero-luxury-glow pointer-events-none absolute inset-0" aria-hidden />
 
         <div className="relative z-10 flex flex-1 flex-col px-4 pb-6 pt-12 sm:px-6 sm:pb-8 sm:pt-16 lg:px-10 lg:pt-20">
           <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col items-center text-center lg:max-w-4xl">
