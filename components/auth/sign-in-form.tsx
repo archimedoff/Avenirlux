@@ -5,13 +5,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FormEvent, useState } from "react";
 
 import { mergeGuestFavorites } from "@/lib/favorites-api";
+import { safeCallbackUrl } from "@/lib/navigation";
 
-type Props = { onSuccess?: () => void };
+type Props = { onSuccess?: () => void; callbackUrl?: string };
 
-export function SignInForm({ onSuccess }: Props) {
+export function SignInForm({ onSuccess, callbackUrl: callbackUrlProp }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/account";
+  const callbackUrl = callbackUrlProp ?? safeCallbackUrl(searchParams.get("callbackUrl"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");

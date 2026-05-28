@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { HotelCard } from "@/components/hotel-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { RecentlyViewedStrip } from "@/components/recently-viewed-strip";
 import { formatUsd } from "@/lib/booking-utils";
 import { COUNTRIES } from "@/lib/countries";
@@ -70,9 +71,11 @@ export function AccountDashboard({ user: initialUser, bookings, savedHotels }: P
           </Link>
         </div>
         {upcoming.length === 0 ? (
-          <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border-strong)] p-8 text-center text-sm text-[var(--foreground-muted)]">
-            No upcoming reservations. Your next journey begins here.
-          </div>
+          <EmptyState
+            title="No upcoming stays"
+            description="Your next journey begins with a single reservation."
+            action={{ href: "/hotels", label: "Explore hotels" }}
+          />
         ) : (
           <div className="grid gap-4">
             {upcoming.map((b) => (
@@ -96,7 +99,11 @@ export function AccountDashboard({ user: initialUser, bookings, savedHotels }: P
       <section className="space-y-4">
         <h3 className="font-display text-xl font-medium tracking-[-0.02em]">Saved hotels</h3>
         {savedHotels.length === 0 ? (
-          <p className="text-sm text-[var(--foreground-muted)]">Tap the heart on any stay to save it here.</p>
+          <EmptyState
+            title="No saved hotels"
+            description="Tap the heart on any stay to save it here."
+            action={{ href: "/hotels", label: "Browse stays" }}
+          />
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
             {savedHotels.map((hotel) => (

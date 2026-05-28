@@ -7,6 +7,8 @@ import { useEffect, useState } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
 import { UserMenu } from "@/components/user-menu";
+import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
+import { isDashboardRoute } from "@/lib/navigation";
 
 const nav = [
   { href: "/", label: "Explore" },
@@ -19,6 +21,8 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  useBodyScrollLock(open);
+
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     onScroll();
@@ -29,6 +33,12 @@ export function SiteHeader() {
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
+
+  if (isDashboardRoute(pathname)) {
+    return null;
+  }
+
+  const role = session?.user?.role;
 
   return (
     <header
@@ -109,11 +119,11 @@ export function SiteHeader() {
 
       <div
         id="mobile-nav"
-        className={`overflow-hidden border-t border-[var(--border)] bg-[var(--surface-elevated)]/92 backdrop-blur-2xl backdrop-saturate-150 transition-[max-height,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
-          open ? "max-h-96 opacity-100" : "max-h-0 opacity-0 border-t-transparent"
+        className={`min-h-0 overflow-hidden border-t border-[var(--border)] bg-[var(--surface-elevated)]/92 backdrop-blur-2xl backdrop-saturate-150 transition-[max-height,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
+          open ? "max-h-[min(32rem,85dvh)] opacity-100" : "max-h-0 opacity-0 border-t-transparent"
         }`}
       >
-        <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Mobile">
+        <nav className="flex min-h-0 flex-col gap-1 overflow-y-auto px-4 py-4" aria-label="Mobile">
           {nav.map((item) => (
             <Link
               key={item.href}
@@ -126,6 +136,19 @@ export function SiteHeader() {
           {session?.user && (
             <Link href="/account" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
               Account
+            </Link>
+          )}
+          <Link href="/list-property" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
+            List property
+          </Link>
+          {(role === "host" || role === "admin") && (
+            <Link href="/host" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
+              Host studio
+            </Link>
+          )}
+          {role === "admin" && (
+            <Link href="/admin" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
+              Admin
             </Link>
           )}
           <Link href="/hotels" className="btn-primary mt-2 text-center text-[0.9375rem]">

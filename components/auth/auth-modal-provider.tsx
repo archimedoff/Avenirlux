@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 import { AuthModal } from "@/components/auth/auth-modal";
+import type { SocialProviderMeta } from "@/lib/auth/social-types";
 
 type AuthMode = "signin" | "signup";
 
@@ -13,7 +14,13 @@ type AuthModalContextValue = {
 
 const AuthModalContext = createContext<AuthModalContextValue | null>(null);
 
-export function AuthModalProvider({ children }: { children: ReactNode }) {
+export function AuthModalProvider({
+  children,
+  socialProviders = [],
+}: {
+  children: ReactNode;
+  socialProviders?: SocialProviderMeta[];
+}) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>("signin");
 
@@ -27,7 +34,7 @@ export function AuthModalProvider({ children }: { children: ReactNode }) {
   return (
     <AuthModalContext.Provider value={{ openAuth, closeAuth }}>
       {children}
-      <AuthModal open={open} mode={mode} onClose={closeAuth} onModeChange={setMode} />
+      <AuthModal open={open} mode={mode} providers={socialProviders} onClose={closeAuth} onModeChange={setMode} />
     </AuthModalContext.Provider>
   );
 }

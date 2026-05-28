@@ -6,6 +6,8 @@ import { useMemo, useState } from "react";
 import { DestinationGrid, type DestinationCard } from "@/components/destination-grid";
 import { HotelCard } from "@/components/hotel-card";
 import { SearchBar } from "@/components/search-bar";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ErrorState } from "@/components/ui/error-state";
 import { buildStayQuery } from "@/lib/booking-utils";
 import type { AvailabilityStatus, Hotel, LuxuryCategory } from "@/lib/hotel-types";
 
@@ -138,12 +140,7 @@ export function HotelsListing({
         <DestinationGrid destinations={destinations} title="Where to go" subtitle="Every destination includes live luxury availability" />
       )}
 
-      {error && (
-        <section className="rounded-[var(--radius-card)] border border-amber-200/80 bg-amber-50/90 p-6 text-sm text-amber-950">
-          <p className="font-semibold">Unable to load hotels</p>
-          <p className="mt-2">{error}</p>
-        </section>
-      )}
+      {error && <ErrorState title="Unable to load stays" message={error} />}
 
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
         <aside className="glass-card h-fit space-y-4 p-5 lg:sticky lg:top-24">
@@ -231,34 +228,25 @@ export function HotelsListing({
         </aside>
 
         {!error && hotels.length === 0 ? (
-          <section className="rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface)] p-12 text-center">
-            <p className="text-lg font-semibold">No stays available</p>
-            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-              {city
-                ? `Try different dates or another neighborhood in ${city}.`
-                : "Choose a destination to explore live availability."}
-            </p>
-            <Link href="/hotels" className="btn-primary mt-6 inline-flex">
-              Browse destinations
-            </Link>
-          </section>
+          <EmptyState
+            title="No stays available"
+            description={city ? `Try different dates or another neighborhood in ${city}.` : "Choose a destination to explore live availability."}
+            action={{ href: "/hotels", label: "Browse destinations" }}
+          />
         ) : filtered.length === 0 ? (
-          <section className="rounded-[var(--radius-card)] border border-dashed border-[var(--border-strong)] bg-[var(--surface)] p-12 text-center">
-            <p className="text-lg font-semibold">No stays match</p>
-            <p className="mt-2 text-sm text-[var(--foreground-muted)]">
-              {city
+          <EmptyState
+            title="No stays match"
+            description={
+              city
                 ? `We could not find residences in ${city} with these filters.`
-                : "Adjust filters or choose another destination."}
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <button type="button" className="btn-secondary" onClick={clearFilters}>
-                Clear filters
-              </button>
-              <Link href="/hotels" className="btn-primary">
-                Browse all hotels
-              </Link>
-            </div>
-          </section>
+                : "Adjust filters or choose another destination."
+            }
+            action={{ href: "/hotels", label: "Browse all hotels" }}
+          >
+            <button type="button" className="btn-secondary mt-4" onClick={clearFilters}>
+              Clear filters
+            </button>
+          </EmptyState>
         ) : (
           <div className="space-y-8">
             <section className="grid gap-6 md:grid-cols-2">

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 
 import { buildStayQuery, defaultCheckIn, defaultCheckOut } from "@/lib/booking-utils";
 import { DESTINATIONS } from "@/lib/liteapi/destinations";
@@ -28,6 +28,14 @@ export function SearchBar({
   const [checkIn, setCheckIn] = useState(initialCheckIn || defaultCheckIn());
   const [checkOut, setCheckOut] = useState(initialCheckOut || defaultCheckOut());
   const [guests, setGuests] = useState(initialGuests);
+
+  const today = useMemo(() => new Date().toISOString().slice(0, 10), []);
+  const minCheckOut = useMemo(() => {
+    if (!checkIn) return today;
+    const d = new Date(checkIn);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10);
+  }, [checkIn, today]);
 
   useEffect(() => {
     setCity(initialCity);
@@ -66,11 +74,11 @@ export function SearchBar({
       </label>
       <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
         Check in
-        <input type="date" value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="input-premium !mt-2" />
+        <input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="input-premium !mt-2" />
       </label>
       <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
         Check out
-        <input type="date" value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="input-premium !mt-2" />
+        <input type="date" min={minCheckOut} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="input-premium !mt-2" />
       </label>
       <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
         Guests

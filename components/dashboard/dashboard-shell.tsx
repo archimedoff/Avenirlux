@@ -58,7 +58,7 @@ export function DashboardShell({ title, subtitle, nav, children, badge }: Props)
             {subtitle && <p className="dash-subtitle">{subtitle}</p>}
           </div>
         </header>
-        <div className="dash-content page-enter">{children}</div>
+        <div className="dash-content page-enter pb-[max(1.5rem,env(safe-area-inset-bottom))] lg:pb-0">{children}</div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { memo } from "react";
 
 import { FavoriteButton } from "@/components/favorite-button";
 import { formatUsd } from "@/lib/booking-utils";
@@ -9,7 +10,7 @@ type HotelCardProps = {
   detailQueryString?: string;
 };
 
-export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
+function HotelCardInner({ hotel, detailQueryString }: HotelCardProps) {
   const href = detailQueryString ? `/hotel/${hotel.id}?${detailQueryString}` : `/hotel/${hotel.id}`;
   const rating = hotel.rating || 0;
 
@@ -95,3 +96,5 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
     </article>
   );
 }
+
+export const HotelCard = memo(HotelCardInner);

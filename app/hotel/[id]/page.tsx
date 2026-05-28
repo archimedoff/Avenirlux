@@ -1,3 +1,6 @@
+import type { Metadata } from "next";
+import { cache } from "react";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -7,6 +10,35 @@ import { HotelCard } from "@/components/hotel-card";
 import { HotelTrackView } from "@/components/hotel-track-view";
 import { buildStayQuery } from "@/lib/booking-utils";
 import { fetchHotelById, fetchSimilarHotels } from "@/lib/hotels-data";
+
+const getHotelCached = cache(fetchHotelById);
+
+
+type MetaProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ checkIn?: string; checkOut?: string; guests?: string; city?: string }>;
+};
+
+export async function generateMetadata({ params, searchParams }: MetaProps): Promise<Metadata> {
+  const { id } = await params;
+  const query = await searchParams;
+  const hotel = await getHotelCached(id, {
+    checkIn: query.checkIn,
+    checkOut: query.checkOut,
+    guests: Number(query.guests || "2") || 2,
+    city: query.city,
+  });
+  if (!hotel) return { title: "Stay not found" };
+  return {
+    title: hotel.name,
+    description: hotel.description.slice(0, 160),
+    openGraph: {
+      title: hotel.name,
+      description: hotel.poeticTagline || hotel.description.slice(0, 160),
+      images: hotel.image ? [{ url: hotel.image, alt: hotel.name }] : undefined,
+    },
+  };
+}
 
 type HotelDetailPageProps = {
   params: Promise<{
@@ -25,7 +57,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
   const { id } = await params;
   const query = await searchParams;
 
-  const hotel = await fetchHotelById(id, {
+  const hotel = await getHotelCached(id, {
     checkIn: query.checkIn,
     checkOut: query.checkOut,
     guests: Number(query.guests || "2") || 2,

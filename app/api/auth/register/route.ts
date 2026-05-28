@@ -15,6 +15,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid input" }, { status: 400 });
     }
 
+    const existing = await userRepository.findByEmail(email);
+    if (existing) {
+      if (!userRepository.hasPassword(existing)) {
+        return NextResponse.json({ error: "SOCIAL_ACCOUNT" }, { status: 409 });
+      }
+      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+    }
+
     const user = await userRepository.create({ email, password, firstName, lastName, role: listProperty ? "host" : "guest" });
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {

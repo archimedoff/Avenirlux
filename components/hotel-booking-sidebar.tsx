@@ -118,7 +118,7 @@ export function HotelBookingSidebar({
           Reserve your stay
         </Link>
       </aside>
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/50 bg-white/92 px-4 py-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-white/50 bg-white/92 px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-lg)] backdrop-blur-xl sm:hidden">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-4">
           <div className="min-w-0">
             <p className="truncate text-xs font-semibold uppercase tracking-[0.1em] text-[var(--foreground-subtle)]">{room?.name}</p>

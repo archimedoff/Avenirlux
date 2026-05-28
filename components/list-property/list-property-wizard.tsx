@@ -30,6 +30,7 @@ export function ListPropertyWizard() {
   });
   const [galleryUrl, setGalleryUrl] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const publish = async () => {
     if (!session?.user) {
@@ -37,6 +38,7 @@ export function ListPropertyWizard() {
       return;
     }
     setSubmitting(true);
+    setSubmitError("");
     const res = await fetch("/api/host/listings", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -48,6 +50,10 @@ export function ListPropertyWizard() {
       }),
     });
     setSubmitting(false);
+    if (!res.ok) {
+      setSubmitError("Could not submit listing. Sign in as a host and try again.");
+      return;
+    }
     if (res.ok) {
       const data = await res.json();
       router.push(`/host/listings/${data.listing.id}`);
@@ -70,6 +76,7 @@ export function ListPropertyWizard() {
         </div>
       </div>
       <div className="glass-card mt-8 space-y-4 p-6 sm:p-10">
+        {submitError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{submitError}</p>}
         {current === "Property" && (
           <>
             <label className="dash-field"><span>Name</span><input className="input-premium" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></label>

@@ -6,9 +6,9 @@ import { FormEvent, useState } from "react";
 
 import { mergeGuestFavorites } from "@/lib/favorites-api";
 
-type Props = { onSuccess?: () => void; onSwitch?: () => void };
+type Props = { onSuccess?: () => void; onSwitch?: () => void; callbackUrl?: string };
 
-export function SignUpForm({ onSuccess, onSwitch }: Props) {
+export function SignUpForm({ onSuccess, onSwitch, callbackUrl: callbackUrlProp }: Props) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -29,7 +29,13 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
     });
     if (!reg.ok) {
       const data = await reg.json().catch(() => ({}));
-      setError(data.error === "Email already registered" ? "This email is already registered" : "Could not create account");
+      setError(
+        data.error === "SOCIAL_ACCOUNT"
+          ? "This email uses social sign-in. Continue with Google, Apple, or Facebook."
+          : data.error === "Email already registered"
+            ? "This email is already registered"
+            : "Could not create account",
+      );
       setLoading(false);
       return;
     }
@@ -42,7 +48,8 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
     }
     await mergeGuestFavorites();
     onSuccess?.();
-    router.push(listProperty ? "/host" : "/account");
+    const destination = callbackUrlProp && callbackUrlProp !== "/account" ? callbackUrlProp : listProperty ? "/host" : "/account";
+    router.push(destination);
     router.refresh();
   };
 

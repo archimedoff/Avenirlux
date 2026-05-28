@@ -50,18 +50,28 @@ export type BookingRequestRecord = {
 export type UserProfile = {
   phone?: string;
   country?: string;
+  avatarUrl?: string;
+};
+
+export type OAuthProviderId = "google" | "apple" | "facebook" | "twitter";
+
+export type OAuthAccountLink = {
+  accountId: string;
+  linkedAt: string;
 };
 
 export type UserRecord = {
   role: UserRole;
   id: string;
   email: string;
+  /** Empty when the account is OAuth-only (no email password set). */
   passwordHash: string;
   firstName: string;
   lastName: string;
   createdAt: string;
   profile: UserProfile;
   conciergePreferences: ConciergePreferences;
+  oauthAccounts?: Partial<Record<OAuthProviderId, OAuthAccountLink>>;
 };
 
 export type BookingStatus = "upcoming" | "completed" | "cancelled";

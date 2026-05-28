@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import { PricingBreakdownView } from "@/components/pricing-breakdown";
+import { CheckoutSkeleton } from "@/components/ui/checkout-skeleton";
 import { ReservationProgress } from "@/components/reservation-progress";
 import { buildStayQuery, countNights, formatUsd, generateConfirmationRef } from "@/lib/booking-utils";
 import { COUNTRIES } from "@/lib/countries";
@@ -55,6 +56,7 @@ export function BookingCheckout({ hotel, checkIn, checkOut, guests, roomId }: Bo
   const [arrivalTime, setArrivalTime] = useState("Flexible");
   const [conciergeNotes, setConciergeNotes] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -93,6 +95,7 @@ export function BookingCheckout({ hotel, checkIn, checkOut, guests, roomId }: Bo
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setSubmitting(true);
+    setSubmitError("");
 
     const guest: GuestDetails = {
       firstName,
@@ -154,21 +157,23 @@ export function BookingCheckout({ hotel, checkIn, checkOut, guests, roomId }: Bo
       }
     }
     const q = buildStayQuery({ hotelId: hotel.id, city: hotel.city, checkIn, checkOut, guests, roomId: room?.id });
-    router.push(`/confirmation?${q}&ref=${ref}`);
+    try {
+      router.push(`/confirmation?${q}&ref=${ref}`);
+    } catch {
+      setSubmitError("Could not complete reservation. Please try again.");
+      setSubmitting(false);
+    }
   };
 
   if (!hydrated) {
-    return (
-      <div className="flex min-h-[40vh] items-center justify-center">
-        <p className="animate-pulse text-sm text-[var(--foreground-muted)]">Loading checkout…</p>
-      </div>
-    );
+    return <CheckoutSkeleton />;
   }
 
   return (
     <form onSubmit={onSubmit} className="page-enter grid gap-8 lg:grid-cols-[1.35fr_1fr] lg:gap-10">
       <section className="glass-card space-y-6 p-6 sm:p-8">
         <ReservationProgress current="checkout" />
+        {submitError && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{submitError}</p>}
         <div>
           <h2 className="text-lg font-semibold tracking-[-0.02em]">Guest information</h2>
           <p className="mt-1 text-sm text-[var(--foreground-muted)]">Your details are stored securely for this session.</p>

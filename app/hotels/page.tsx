@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Luxury hotels",
+  description: "Browse curated luxury residences with live availability across the world's most considered destinations.",
+};
+
 import { HotelsListing } from "@/components/hotels-listing";
 import { fetchHotels, getDestinations } from "@/lib/hotels-data";
 
