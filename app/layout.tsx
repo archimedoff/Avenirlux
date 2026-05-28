@@ -3,6 +3,7 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 import Link from "next/link";
 
 import { BrandMark } from "@/components/brand-mark";
+import { AppProviders } from "@/components/providers/app-providers";
 import { SiteHeader } from "@/components/site-header";
 
 import "./globals.css";
@@ -51,6 +52,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${plusJakarta.variable} ${fraunces.variable}`}>
       <body className={`${plusJakarta.className} flex min-h-screen flex-col antialiased`}>
+        <AppProviders>
         <SiteHeader />
         <div className="mx-auto w-full max-w-[var(--container)] flex-1 px-4 pb-16 pt-3 sm:px-6 sm:pb-20 sm:pt-4 lg:px-8 lg:pt-5">
           {children}
@@ -83,6 +85,7 @@ export default function RootLayout({
             </p>
           </div>
         </footer>
+              </AppProviders>
       </body>
     </html>
   );

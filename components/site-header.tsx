@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { UserMenu } from "@/components/user-menu";
 
 const nav = [
   { href: "/", label: "Explore" },
@@ -13,6 +15,7 @@ const nav = [
 
 export function SiteHeader() {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -61,40 +64,53 @@ export function SiteHeader() {
               </Link>
             );
           })}
+          {session?.user && (
+            <Link
+              href="/account"
+              className={`rounded-full px-3 py-1.5 text-[0.8125rem] font-medium tracking-[-0.01em] transition-colors duration-300 ${
+                pathname.startsWith("/account")
+                  ? "bg-[var(--surface-muted)] text-[var(--foreground)]"
+                  : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              Account
+            </Link>
+          )}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
           <Link href="/hotels" className="btn-secondary text-[0.8125rem] !py-2 !px-3.5 !font-medium">
             List property
           </Link>
-          <Link href="/hotels" className="btn-primary text-[0.8125rem] !py-2 !px-4 !font-semibold">
-            Book
-          </Link>
+          <UserMenu />
         </div>
 
-        <button
-          type="button"
-          className="btn-icon md:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label={open ? "Close menu" : "Open menu"}
-          onClick={() => setOpen((v) => !v)}
-        >
-          <span className="sr-only">Menu</span>
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
-            {open ? (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            ) : (
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-            )}
-          </svg>
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <UserMenu />
+          <button
+            type="button"
+            className="btn-icon"
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <span className="sr-only">Menu</span>
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden>
+              {open ? (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              ) : (
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              )}
+            </svg>
+          </button>
+        </div>
       </div>
 
       <div
         id="mobile-nav"
         className={`overflow-hidden border-t border-[var(--border)] bg-[var(--surface-elevated)]/92 backdrop-blur-2xl backdrop-saturate-150 transition-[max-height,opacity] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:hidden ${
-          open ? "max-h-80 opacity-100" : "max-h-0 opacity-0 border-t-transparent"
+          open ? "max-h-96 opacity-100" : "max-h-0 opacity-0 border-t-transparent"
         }`}
       >
         <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Mobile">
@@ -107,6 +123,11 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {session?.user && (
+            <Link href="/account" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
+              Account
+            </Link>
+          )}
           <Link href="/hotels" className="btn-primary mt-2 text-center text-[0.9375rem]">
             Book a stay
           </Link>

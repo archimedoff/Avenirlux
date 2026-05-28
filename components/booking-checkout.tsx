@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 
 import { PricingBreakdownView } from "@/components/pricing-breakdown";
@@ -9,6 +10,7 @@ import { ReservationProgress } from "@/components/reservation-progress";
 import { buildStayQuery, countNights, formatUsd, generateConfirmationRef } from "@/lib/booking-utils";
 import { COUNTRIES } from "@/lib/countries";
 import type { Hotel } from "@/lib/hotel-types";
+import { saveAccountBooking } from "@/lib/bookings-api";
 import { paymentGateway } from "@/lib/reservation/payment";
 import { calculateStayPricing } from "@/lib/reservation/pricing";
 import {
@@ -38,6 +40,7 @@ type BookingCheckoutProps = {
 
 export function BookingCheckout({ hotel, checkIn, checkOut, guests, roomId }: BookingCheckoutProps) {
   const router = useRouter();
+  const { data: session } = useSession();
   const room = hotel.rooms.find((r) => r.id === roomId) ?? hotel.rooms[0];
   const nightly = room?.pricePerNight ?? hotel.pricePerNight;
   const nights = countNights(checkIn, checkOut);
@@ -143,6 +146,13 @@ export function BookingCheckout({ hotel, checkIn, checkOut, guests, roomId }: Bo
     }
 
     saveReservation(confirmed);
+    if (session?.user) {
+      try {
+        await saveAccountBooking(confirmed, ref);
+      } catch {
+        /* persist locally */
+      }
+    }
     const q = buildStayQuery({ hotelId: hotel.id, city: hotel.city, checkIn, checkOut, guests, roomId: room?.id });
     router.push(`/confirmation?${q}&ref=${ref}`);
   };

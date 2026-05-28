@@ -504,3 +504,17 @@ html {
     box-shadow: 0 0 0 12px rgba(9, 9, 11, 0);
   }
 }
+
+
+.auth-panel-shine {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.35) 0%,
+    transparent 42%,
+    rgba(212, 175, 55, 0.06) 100%
+  );
+}
+
+.auth-panel {
+  animation: page-enter 0.5s var(--ease-luxury) both;
+}
