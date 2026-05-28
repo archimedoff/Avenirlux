@@ -23,7 +23,7 @@ export function useSocialProviders(_initialFromServer?: SocialProviderState[]) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/providers", {
+      const res = await fetch("/api/auth/social-catalog", {
         cache: "no-store",
         headers: { Accept: "application/json" },
       });
@@ -35,7 +35,7 @@ export function useSocialProviders(_initialFromServer?: SocialProviderState[]) {
         throw new Error("Empty provider list");
       }
     } catch (err) {
-      console.warn("[AvenirLux OAuth] Failed to load /api/auth/providers", err);
+      console.warn("[AvenirLux OAuth] Failed to load /api/auth/social-catalog", err);
       setError("Could not load sign-in options. Retry or use email.");
     } finally {
       setLoading(false);

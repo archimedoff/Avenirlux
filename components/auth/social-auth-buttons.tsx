@@ -3,8 +3,8 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 
+import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
 import { ProviderIcon } from "@/components/auth/provider-icons";
-import { signInWithGoogle } from "@/lib/auth/google-sign-in";
 import { oauthCallbackUrl } from "@/lib/navigation";
 import type { SocialProviderId, SocialProviderState } from "@/lib/auth/social-types";
 
@@ -14,28 +14,16 @@ type Props = {
   loading?: boolean;
 };
 
-function displayProviders(providers: SocialProviderState[]): SocialProviderState[] {
-  return providers.map((p) => (p.id === "google" ? { ...p, enabled: true } : p));
+function otherProviders(providers: SocialProviderState[]): SocialProviderState[] {
+  return providers.filter((p) => p.id !== "google");
 }
 
 export function SocialAuthButtons({ providers, callbackUrl = "/", loading = false }: Props) {
-  const list = displayProviders(providers);
+  const others = otherProviders(providers);
   const oauthRedirect = oauthCallbackUrl(callbackUrl);
   const [loadingId, setLoadingId] = useState<SocialProviderId | null>(null);
-  const [googleError, setGoogleError] = useState<string | null>(null);
-
-  const handleGoogle = async () => {
-    setGoogleError(null);
-    setLoadingId("google");
-    const result = await signInWithGoogle();
-    if (!result.ok) {
-      setLoadingId(null);
-      setGoogleError(result.error ?? "Google sign-in unavailable.");
-    }
-  };
 
   const handleOther = async (id: SocialProviderId) => {
-    setGoogleError(null);
     setLoadingId(id);
     try {
       const result = await signIn(id, { callbackUrl: oauthRedirect, redirect: false });
@@ -62,16 +50,11 @@ export function SocialAuthButtons({ providers, callbackUrl = "/", loading = fals
 
   return (
     <div className="space-y-2.5">
-      {googleError && (
-        <p className="rounded-lg border border-rose-400/25 bg-rose-500/10 px-3 py-2 text-sm text-rose-100" role="alert">
-          {googleError}
-        </p>
-      )}
-      {list.map((provider) => {
-        const isGoogle = provider.id === "google";
+      <GoogleSignInButton />
+      {others.map((provider) => {
         const isLoading = loadingId === provider.id;
-        const isSoon = !isGoogle && !provider.enabled;
-        const disabled = isGoogle ? isLoading : isSoon || loadingId !== null;
+        const isSoon = !provider.enabled;
+        const disabled = isSoon || loadingId !== null;
 
         return (
           <button
@@ -80,13 +63,7 @@ export function SocialAuthButtons({ providers, callbackUrl = "/", loading = fals
             disabled={disabled}
             aria-disabled={disabled}
             className={`btn-social ${isSoon ? "btn-social--soon" : ""} ${isLoading ? "btn-social--loading" : ""}`}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (isGoogle) {
-                void handleGoogle();
-                return;
-              }
+            onClick={() => {
               if (isSoon) return;
               void handleOther(provider.id);
             }}
