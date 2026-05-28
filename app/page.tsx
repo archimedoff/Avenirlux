@@ -2,38 +2,14 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SearchBar } from "@/components/search-bar";
-
-const featuredCities = [
-  {
-    name: "Dubai",
-    tag: "Skyline & desert",
-    image:
-      "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=900&q=82",
-  },
-  {
-    name: "Barcelona",
-    tag: "Coast & culture",
-    image:
-      "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?auto=format&fit=crop&w=900&q=82",
-  },
-  {
-    name: "Chamonix",
-    tag: "Alpine escape",
-    image:
-      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?auto=format&fit=crop&w=900&q=82",
-  },
-  {
-    name: "Singapore",
-    tag: "Garden city",
-    image:
-      "https://images.unsplash.com/photo-1525625293386-3a8f3d9e3e1b?auto=format&fit=crop&w=900&q=82",
-  },
-];
+import { getDestinations } from "@/lib/hotels-service";
 
 const cinematicSrc =
   "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=2400&q=85";
 
 export default function HomePage() {
+  const featuredCities = getDestinations().slice(0, 8);
+
   return (
     <main className="space-y-10 pb-8 sm:space-y-12 sm:pb-10">
       <section className="group relative flex min-h-[min(92vh,44rem)] flex-col overflow-hidden rounded-[var(--radius-card)] border border-[rgba(9,9,11,0.08)] bg-[#1c1917] shadow-[var(--shadow-lg)] sm:min-h-[min(90vh,52rem)]">

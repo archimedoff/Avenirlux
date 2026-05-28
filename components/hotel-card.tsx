@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { formatUsd } from "@/lib/booking-utils";
 import type { Hotel } from "@/lib/hotel-types";
 
 type HotelCardProps = {
@@ -38,9 +39,18 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             className="pointer-events-none absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-transparent opacity-40"
             aria-hidden
           />
-          <div className="absolute left-4 top-4 z-[1] flex items-center gap-2 sm:left-5 sm:top-5">
+          <div className="absolute left-4 top-4 z-[1] flex flex-wrap items-center gap-2 sm:left-5 sm:top-5">
             <span className="rounded-full border border-white/25 bg-white/15 px-3 py-1 text-[0.6875rem] font-semibold tracking-wide text-white shadow-[0_4px_24px_rgba(0,0,0,0.2)] backdrop-blur-md">
               ★ {rating.toFixed(1)}
+            </span>
+            <span
+              className={`rounded-full px-3 py-1 text-[0.6875rem] font-semibold backdrop-blur-md ${
+                hotel.availability === "available"
+                  ? "border border-emerald-200/40 bg-emerald-950/40 text-emerald-50"
+                  : "border border-amber-200/40 bg-amber-950/40 text-amber-50"
+              }`}
+            >
+              {hotel.availability === "available" ? "Available" : "Limited"}
             </span>
             <span
               aria-label="Favorite stay"
@@ -63,7 +73,12 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             {hotel.location}, {hotel.city}
           </p>
           <div className="flex flex-wrap gap-2">
-            {hotel.amenities.slice(0, 3).map((amenity) => (
+            {hotel.categories.slice(0, 2).map((cat) => (
+              <span key={cat} className="badge-dark text-[0.6875rem] capitalize">
+                {cat}
+              </span>
+            ))}
+            {hotel.amenities.slice(0, 2).map((amenity) => (
               <span key={amenity} className="badge">
                 {amenity}
               </span>
@@ -74,7 +89,7 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             <p className="text-[0.8125rem] font-medium text-[var(--foreground-subtle)]">From</p>
             <p className="text-right">
               <span className="font-display text-2xl font-medium tracking-[-0.03em] text-[var(--foreground)]">
-                ${hotel.pricePerNight ?? "—"}
+                {formatUsd(hotel.pricePerNight)}
               </span>
               <span className="text-sm font-medium text-[var(--foreground-muted)]"> / night</span>
             </p>

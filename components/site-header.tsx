@@ -8,7 +8,7 @@ import { BrandMark } from "@/components/brand-mark";
 
 const nav = [
   { href: "/", label: "Explore" },
-  { href: "/hotels", label: "Stays" },
+  { href: "/hotels", label: "Hotels" },
 ];
 
 export function SiteHeader() {
