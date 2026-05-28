@@ -6,9 +6,9 @@ import { FormEvent, useState } from "react";
 
 import { mergeGuestFavorites } from "@/lib/favorites-api";
 
-type Props = { onSuccess?: () => void; onSwitch?: () => void; callbackUrl?: string };
+type Props = { onSuccess?: () => void; onSwitch?: () => void; callbackUrl?: string; variant?: "light" | "dark" };
 
-export function SignUpForm({ onSuccess, onSwitch, callbackUrl: callbackUrlProp }: Props) {
+export function SignUpForm({ onSuccess, onSwitch, callbackUrl: callbackUrlProp, variant = "light" }: Props) {
   const router = useRouter();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -17,6 +17,14 @@ export function SignUpForm({ onSuccess, onSwitch, callbackUrl: callbackUrlProp }
   const [error, setError] = useState("");
   const [listProperty, setListProperty] = useState(false);
   const [loading, setLoading] = useState(false);
+  const dark = variant === "dark";
+  const labelClass = dark
+    ? "block text-xs font-semibold uppercase tracking-[0.12em] text-white/45"
+    : "block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]";
+  const labelClassGrid = dark
+    ? "text-xs font-semibold uppercase tracking-[0.12em] text-white/45"
+    : "text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]";
+  const inputClass = dark ? "input-premium-dark mt-2" : "input-premium mt-2";
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -55,30 +63,30 @@ export function SignUpForm({ onSuccess, onSwitch, callbackUrl: callbackUrlProp }
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
+      {error && <p className={dark ? "rounded-lg bg-rose-500/15 px-3 py-2 text-sm text-rose-100" : "rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"}>{error}</p>}
       <div className="grid gap-4 sm:grid-cols-2">
-        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+        <label className={labelClassGrid}>
           First name
-          <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input-premium mt-2" />
+          <input required value={firstName} onChange={(e) => setFirstName(e.target.value)} className={inputClass} />
         </label>
-        <label className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+        <label className={labelClassGrid}>
           Last name
-          <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className="input-premium mt-2" />
+          <input required value={lastName} onChange={(e) => setLastName(e.target.value)} className={inputClass} />
         </label>
       </div>
-      <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+      <label className={labelClass}>
         Email
-        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-premium mt-2" />
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} />
       </label>
-      <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+      <label className={labelClass}>
         Password
-        <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="input-premium mt-2" placeholder="At least 8 characters" />
+        <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} placeholder="At least 8 characters" />
       </label>
-      <label className="flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+      <label className={`flex items-center gap-2 ${dark ? "text-sm text-white/55" : "text-sm text-[var(--foreground-muted)]"}`}>
         <input type="checkbox" checked={listProperty} onChange={(e) => setListProperty(e.target.checked)} />
         I want to list my property on AvenirLux
       </label>
-      <button type="submit" disabled={loading} className="btn-primary w-full py-3.5">
+      <button type="submit" disabled={loading} className={`w-full py-3.5 ${dark ? "btn-primary-glow" : "btn-primary"}`}>
         {loading ? "Creating account…" : "Create account"}
       </button>
     </form>

@@ -10,11 +10,25 @@ const MESSAGES: Record<string, string> = {
   Default: "Something went wrong while signing in. Please try again.",
 };
 
-export function AuthErrorBanner({ error }: { error?: string | null }) {
+export function AuthErrorBanner({
+  error,
+  variant = "light",
+}: {
+  error?: string | null;
+  variant?: "light" | "dark";
+}) {
   if (!error) return null;
   const message = MESSAGES[error] ?? MESSAGES.Default;
+  const dark = variant === "dark";
   return (
-    <p className="rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-sm leading-relaxed text-amber-950" role="alert">
+    <p
+      className={
+        dark
+          ? "rounded-lg border border-rose-400/25 bg-rose-500/10 px-3 py-2.5 text-sm leading-relaxed text-rose-100"
+          : "rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-sm leading-relaxed text-amber-950"
+      }
+      role="alert"
+    >
       {message}
     </p>
   );

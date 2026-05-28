@@ -3,7 +3,8 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 
 import { AuthModal } from "@/components/auth/auth-modal";
-import type { SocialProviderMeta } from "@/lib/auth/social-types";
+import { useSocialProviders } from "@/lib/hooks/use-social-providers";
+import type { SocialProviderState } from "@/lib/auth/social-types";
 
 type AuthMode = "signin" | "signup";
 
@@ -19,22 +20,35 @@ export function AuthModalProvider({
   socialProviders = [],
 }: {
   children: ReactNode;
-  socialProviders?: SocialProviderMeta[];
+  socialProviders?: SocialProviderState[];
 }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>("signin");
+  const { providers, loading, error, refresh } = useSocialProviders(socialProviders);
 
-  const openAuth = useCallback((next: AuthMode = "signin") => {
-    setMode(next);
-    setOpen(true);
-  }, []);
+  const openAuth = useCallback(
+    (next: AuthMode = "signin") => {
+      setMode(next);
+      setOpen(true);
+      void refresh();
+    },
+    [refresh],
+  );
 
   const closeAuth = useCallback(() => setOpen(false), []);
 
   return (
     <AuthModalContext.Provider value={{ openAuth, closeAuth }}>
       {children}
-      <AuthModal open={open} mode={mode} providers={socialProviders} onClose={closeAuth} onModeChange={setMode} />
+      <AuthModal
+        open={open}
+        mode={mode}
+        providers={providers}
+        providersLoading={loading}
+        providersError={error}
+        onClose={closeAuth}
+        onModeChange={setMode}
+      />
     </AuthModalContext.Provider>
   );
 }

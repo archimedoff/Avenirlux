@@ -3,7 +3,7 @@ import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteChrome } from "@/components/site-chrome";
-import { getEnabledSocialProviders } from "@/lib/auth/providers-meta";
+import { getSocialProviderCatalog } from "@/lib/auth/providers-meta";
 import { getSiteUrl } from "@/lib/site";
 
 import "./globals.css";
@@ -67,7 +67,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const socialProviders = getEnabledSocialProviders();
+  const socialProviders = getSocialProviderCatalog();
 
   return (
     <html lang="en" className={`${plusJakarta.variable} ${fraunces.variable}`}>

@@ -7,9 +7,9 @@ import { FormEvent, useState } from "react";
 import { mergeGuestFavorites } from "@/lib/favorites-api";
 import { safeCallbackUrl } from "@/lib/navigation";
 
-type Props = { onSuccess?: () => void; callbackUrl?: string };
+type Props = { onSuccess?: () => void; callbackUrl?: string; variant?: "light" | "dark" };
 
-export function SignInForm({ onSuccess, callbackUrl: callbackUrlProp }: Props) {
+export function SignInForm({ onSuccess, callbackUrl: callbackUrlProp, variant = "light" }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = callbackUrlProp ?? safeCallbackUrl(searchParams.get("callbackUrl"));
@@ -17,6 +17,11 @@ export function SignInForm({ onSuccess, callbackUrl: callbackUrlProp }: Props) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const dark = variant === "dark";
+  const labelClass = dark
+    ? "block text-xs font-semibold uppercase tracking-[0.12em] text-white/45"
+    : "block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]";
+  const inputClass = dark ? "input-premium-dark mt-2" : "input-premium mt-2";
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -36,16 +41,20 @@ export function SignInForm({ onSuccess, callbackUrl: callbackUrlProp }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
-      <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+      {error && (
+        <p className={dark ? "rounded-lg bg-rose-500/15 px-3 py-2 text-sm text-rose-100" : "rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800"}>
+          {error}
+        </p>
+      )}
+      <label className={labelClass}>
         Email
-        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="input-premium mt-2" autoComplete="email" />
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} autoComplete="email" />
       </label>
-      <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+      <label className={labelClass}>
         Password
-        <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="input-premium mt-2" autoComplete="current-password" />
+        <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className={inputClass} autoComplete="current-password" />
       </label>
-      <button type="submit" disabled={loading} className="btn-primary w-full py-3.5">
+      <button type="submit" disabled={loading} className={`w-full py-3.5 ${dark ? "btn-primary-glow" : "btn-primary"}`}>
         {loading ? "Signing in…" : "Sign in"}
       </button>
     </form>

@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { useAuthModal } from "@/components/auth/auth-modal-provider";
 import { UserMenu } from "@/components/user-menu";
 import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
 import { isDashboardRoute } from "@/lib/navigation";
@@ -18,6 +19,7 @@ const nav = [
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
+  const { openAuth } = useAuthModal();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -150,6 +152,16 @@ export function SiteHeader() {
             <Link href="/admin" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
               Admin
             </Link>
+          )}
+          {!session?.user && (
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <button type="button" onClick={() => openAuth("signin")} className="btn-secondary w-full text-[0.9375rem]">
+                Sign in
+              </button>
+              <button type="button" onClick={() => openAuth("signup")} className="btn-primary w-full text-[0.9375rem]">
+                Join
+              </button>
+            </div>
           )}
           <Link href="/hotels" className="btn-primary mt-2 text-center text-[0.9375rem]">
             Book a stay
