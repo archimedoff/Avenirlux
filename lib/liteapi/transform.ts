@@ -1,4 +1,4 @@
-import type { AvailabilityStatus, Hotel, LuxuryCategory, Room } from "@/lib/hotel-types";
+import type { AvailabilityStatus, Hotel, HotelTypeLabel, LuxuryCategory, Room } from "@/lib/hotel-types";
 
 type LiteHotelMeta = {
   id: string;
@@ -7,6 +7,11 @@ type LiteHotelMeta = {
   thumbnail?: string;
   address?: string;
   rating?: number;
+  stars?: number;
+  starRating?: number;
+  hotelType?: string;
+  hotelFacilities?: string[];
+  facilities?: Array<{ name?: string }>;
 };
 
 type LiteRateItem = {
@@ -54,6 +59,27 @@ function guestScoreToStars(score?: number): number {
   return score > 5 ? Math.min(5, Math.round((score / 2) * 10) / 10) : score;
 }
 
+function inferHotelType(facilities: string[], categories: LuxuryCategory[]): HotelTypeLabel {
+  const text = facilities.join(" ").toLowerCase();
+  if (categories.includes("villa") || /villa|residence|private home/.test(text)) return "Villa";
+  if (categories.includes("resort") || /resort|beach resort/.test(text)) return "Resort";
+  if (/boutique|design hotel/.test(text)) return "Boutique";
+  if (/apartment|serviced|residence/.test(text)) return "Residence";
+  return "Hotel";
+}
+
+function resolveStarRating(meta?: Pick<LiteHotelMeta, "starRating" | "stars" | "rating">): number {
+  const raw = meta?.starRating ?? meta?.stars ?? meta?.rating;
+  if (raw && raw > 0) return raw > 5 ? Math.min(5, raw / 2) : raw;
+  return 5;
+}
+
+function facilitiesFromMeta(meta?: LiteHotelMeta): string[] {
+  const fromFacilities = (meta?.facilities?.map((f) => f.name).filter(Boolean) as string[]) || [];
+  const combined = [...(meta?.hotelFacilities || []), ...fromFacilities];
+  return [...new Set(combined.map((s) => s.trim()).filter(Boolean))];
+}
+
 function inferCategories(facilities: string[]): LuxuryCategory[] {
   const text = facilities.join(" ").toLowerCase();
   const cats: LuxuryCategory[] = [];
@@ -83,25 +109,28 @@ export function mergeListingHotel(
   const total = roomType?.offerRetailRate?.amount ?? roomType?.rates?.[0]?.retailRate?.total?.[0]?.amount;
   const nightly = total && nights > 0 ? Math.round(total / nights) : total ?? 0;
   const refundable = roomType?.rates?.[0]?.cancellationPolicies?.refundableTag === "RFN";
-  const facilities: string[] = [];
+  const facilities = facilitiesFromMeta(meta);
 
   const name = meta?.name || `AvenirLux Residence ${id}`;
   const image = meta?.main_photo || meta?.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1800&q=82";
   const address = meta?.address || cityFallback;
 
+  const categories = inferCategories(facilities);
   return {
     id,
     name,
     location: address,
     city: cityFallback,
     country: "",
+    hotelType: inferHotelType(facilities, categories),
+    starRating: resolveStarRating(meta),
     pricePerNight: nightly,
     rating: guestScoreToStars(meta?.rating),
     reviews: 0,
     image,
     gallery: [image],
-    amenities: facilities.length ? facilities.slice(0, 5) : ["Concierge", "Fine dining", "Wellness"],
-    categories: inferCategories(facilities),
+    amenities: facilities.length ? facilities.slice(0, 8) : ["Concierge", "Fine dining", "Wellness", "Pool"],
+    categories,
     coordinates: { lat: 0, lng: 0 },
     description: `A curated luxury stay in ${cityFallback}, selected for exceptional service and refined comfort.`,
     reviewsSummary: [],
@@ -147,19 +176,22 @@ export function transformHotelDetail(
   const lat = detail.location?.latitude ?? 0;
   const lng = detail.location?.longitude ?? 0;
 
+  const categories = inferCategories(facilities);
   const base: Hotel = {
     id: detail.id,
     name: detail.name,
     location: detail.address || cityFallback,
     city: detail.city || cityFallback,
     country: detail.country || "",
+    hotelType: inferHotelType(facilities, categories),
+    starRating: resolveStarRating({ rating: detail.rating }),
     pricePerNight: 0,
     rating: guestScoreToStars(detail.rating),
     reviews: detail.reviewCount || 0,
     image,
     gallery: gallery.length ? gallery : [image],
-    amenities: facilities.slice(0, 8).length ? facilities.slice(0, 8) : ["Concierge", "Fine dining"],
-    categories: inferCategories(facilities),
+    amenities: facilities.slice(0, 8).length ? facilities.slice(0, 8) : ["Concierge", "Fine dining", "Spa"],
+    categories,
     coordinates: { lat, lng },
     description: stripHtml(detail.hotelDescription) || `An exceptional residence in ${detail.city || cityFallback}.`,
     reviewsSummary: detail.reviewCount

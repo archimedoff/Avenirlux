@@ -9,6 +9,7 @@ export type HotelSearchQuery = {
   checkIn?: string;
   checkOut?: string;
   guests?: number;
+  rooms?: number;
   offset?: number;
   limit?: number;
 };
@@ -35,6 +36,11 @@ type RatesResponse = {
     thumbnail?: string;
     address?: string;
     rating?: number;
+    stars?: number;
+    starRating?: number;
+    hotelType?: string;
+    hotelFacilities?: string[];
+    facilities?: Array<{ name?: string }>;
   }>;
 };
 
@@ -46,6 +52,8 @@ function buildRatesBody(query: HotelSearchQuery) {
   const checkIn = query.checkIn || defaultCheckIn();
   const checkOut = query.checkOut || defaultCheckOut();
   const guests = query.guests || 2;
+  const rooms = Math.min(4, Math.max(1, query.rooms ?? 1));
+  const adultsPerRoom = Math.max(1, Math.ceil(guests / rooms));
   const city = query.city?.trim();
   const countryCode = city ? resolveCountryCode(city) : undefined;
 
@@ -54,7 +62,7 @@ function buildRatesBody(query: HotelSearchQuery) {
     checkout: checkOut,
     currency: "USD",
     guestNationality: "US",
-    occupancies: [{ adults: guests }],
+    occupancies: Array.from({ length: rooms }, () => ({ adults: adultsPerRoom })),
     maxRatesPerHotel: 1,
     limit: query.limit ?? 20,
     offset: query.offset ?? 0,

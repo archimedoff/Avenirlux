@@ -20,12 +20,16 @@ export type Room = {
   maxGuests: number;
 };
 
+export type HotelTypeLabel = "Hotel" | "Resort" | "Villa" | "Boutique" | "Residence";
+
 export type Hotel = {
   id: string;
   name: string;
   location: string;
   city: string;
   country: string;
+  hotelType: HotelTypeLabel;
+  starRating: number;
   pricePerNight: number;
   rating: number;
   reviews: number;
@@ -65,8 +69,13 @@ export type HotelSearchParams = {
   checkIn?: string;
   checkOut?: string;
   guests?: string;
+  rooms?: string;
   minPrice?: string;
   maxPrice?: string;
   minRating?: string;
+  minStars?: string;
+  amenities?: string;
   category?: string;
+  limit?: string;
+  offset?: string;
 };

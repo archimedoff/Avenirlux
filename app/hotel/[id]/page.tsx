@@ -29,13 +29,25 @@ export async function generateMetadata({ params, searchParams }: MetaProps): Pro
     city: query.city,
   });
   if (!hotel) return { title: "Stay not found" };
+  const locationLabel = [hotel.city, hotel.country].filter(Boolean).join(", ");
+  const description =
+    hotel.description.slice(0, 155) ||
+    `Luxury ${hotel.hotelType} in ${locationLabel}. From ${hotel.pricePerNight} per night.`;
   return {
-    title: hotel.name,
-    description: hotel.description.slice(0, 160),
+    title: `${hotel.name}${locationLabel ? ` · ${locationLabel}` : ""}`,
+    description,
+    keywords: [hotel.name, hotel.city, hotel.hotelType, ...hotel.categories, "luxury hotel", "AvenirLux"].filter(Boolean),
     openGraph: {
       title: hotel.name,
-      description: hotel.poeticTagline || hotel.description.slice(0, 160),
-      images: hotel.image ? [{ url: hotel.image, alt: hotel.name }] : undefined,
+      description: hotel.poeticTagline || description,
+      images: hotel.image ? [{ url: hotel.image, alt: hotel.name, width: 1200, height: 630 }] : undefined,
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: hotel.name,
+      description: hotel.poeticTagline || description,
+      images: hotel.image ? [hotel.image] : undefined,
     },
   };
 }

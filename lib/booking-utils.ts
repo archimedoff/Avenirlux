@@ -31,18 +31,34 @@ export function buildStayQuery(params: {
   checkIn?: string;
   checkOut?: string;
   guests?: number;
+  rooms?: number;
   hotelId?: string;
   roomId?: string;
   offset?: number;
+  limit?: number;
+  minPrice?: number;
+  maxPrice?: number;
+  minRating?: number;
+  minStars?: number;
+  amenities?: string[];
+  categories?: string[];
 }): string {
   const q = new URLSearchParams();
   if (params.city?.trim()) q.set("city", params.city.trim());
   if (params.checkIn) q.set("checkIn", params.checkIn);
   if (params.checkOut) q.set("checkOut", params.checkOut);
   if (params.guests) q.set("guests", String(params.guests));
+  if (params.rooms && params.rooms > 1) q.set("rooms", String(params.rooms));
   if (params.hotelId) q.set("hotelId", params.hotelId);
   if (params.roomId) q.set("roomId", params.roomId);
   if (params.offset) q.set("offset", String(params.offset));
+  if (params.limit) q.set("limit", String(params.limit));
+  if (params.minPrice !== undefined) q.set("minPrice", String(params.minPrice));
+  if (params.maxPrice !== undefined) q.set("maxPrice", String(params.maxPrice));
+  if (params.minRating !== undefined) q.set("minRating", String(params.minRating));
+  if (params.minStars !== undefined) q.set("minStars", String(params.minStars));
+  if (params.amenities?.length) q.set("amenities", params.amenities.join(","));
+  if (params.categories?.length) q.set("category", params.categories.join(","));
   return q.toString();
 }
 
