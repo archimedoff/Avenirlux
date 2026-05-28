@@ -5,6 +5,7 @@ import { getSiteUrl } from "@/lib/site";
 const STATIC_PATHS = [
   "",
   "/hotels",
+    "/concierge",
   "/list-property",
   "/auth",
   "/account",

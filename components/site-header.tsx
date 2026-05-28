@@ -14,6 +14,7 @@ import { isDashboardRoute } from "@/lib/navigation";
 const nav = [
   { href: "/", label: "Explore" },
   { href: "/hotels", label: "Hotels" },
+  { href: "/concierge", label: "Concierge" },
 ];
 
 export function SiteHeader() {

@@ -3,6 +3,7 @@
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { ConciergeShell } from "@/components/concierge/concierge-shell";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { isDashboardRoute } from "@/lib/navigation";
@@ -25,6 +26,7 @@ export function SiteChrome({ children }: { children: ReactNode }) {
         {children}
       </div>
       <SiteFooter />
+      <ConciergeShell />
     </>
   );
 }

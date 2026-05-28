@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import type { ReactNode } from "react";
 
 import { AuthModalProvider } from "@/components/auth/auth-modal-provider";
+import { ConciergeProvider } from "@/components/concierge/concierge-context";
 import type { SocialProviderState } from "@/lib/auth/social-types";
 
 export function AppProviders({
@@ -15,7 +16,9 @@ export function AppProviders({
 }) {
   return (
     <SessionProvider basePath="/api/auth" refetchOnWindowFocus={false}>
-      <AuthModalProvider socialProviders={socialProviders}>{children}</AuthModalProvider>
+      <ConciergeProvider>
+        <AuthModalProvider socialProviders={socialProviders}>{children}</AuthModalProvider>
+      </ConciergeProvider>
     </SessionProvider>
   );
 }
