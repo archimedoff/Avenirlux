@@ -50,7 +50,11 @@ export function SocialAuthButtons({ providers, callbackUrl = "/account", loading
               <ProviderIcon id={provider.id} />
             </span>
             <span className="btn-social__label">
-              {isLoading ? "Connecting…" : provider.enabled ? provider.signInLabel : `${provider.signInLabel} · Coming soon`}
+              {isLoading
+                ? "Connecting…"
+                : provider.enabled
+                  ? provider.signInLabel
+                  : `${provider.signInLabel} · Coming soon`}
             </span>
           </button>
         );

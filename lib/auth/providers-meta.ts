@@ -1,4 +1,5 @@
 import { isGoogleOAuthConfigured } from "@/lib/auth/google-env";
+import { logOAuthDebug } from "@/lib/auth/oauth-debug";
 import type { SocialProviderId, SocialProviderState } from "@/lib/auth/social-types";
 import { SOCIAL_PROVIDER_META, SOCIAL_PROVIDER_ORDER } from "@/lib/auth/social-types";
 
@@ -28,6 +29,7 @@ function isProviderConfigured(id: SocialProviderId): boolean {
 
 /** Full catalog — always four providers; `enabled` reflects env configuration. */
 export function getSocialProviderCatalog(): SocialProviderState[] {
+  logOAuthDebug("getSocialProviderCatalog");
   return SOCIAL_PROVIDER_ORDER.map((id) => ({
     ...SOCIAL_PROVIDER_META[id],
     enabled: isProviderConfigured(id),

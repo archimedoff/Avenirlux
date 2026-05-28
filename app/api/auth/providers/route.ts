@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 
+import { logOAuthDebug, getOAuthDebugPayload } from "@/lib/auth/oauth-debug";
 import { getSocialProviderCatalog } from "@/lib/auth/providers-meta";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
 export async function GET() {
+  logOAuthDebug("GET /api/auth/providers");
+
+  const providers = getSocialProviderCatalog();
+
   return NextResponse.json(
-    { providers: getSocialProviderCatalog() },
+    {
+      providers,
+      debug: getOAuthDebugPayload(),
+    },
     { headers: { "Cache-Control": "no-store, max-age=0" } },
   );
 }

@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 
-import { AuthPanelBody } from "@/components/auth/auth-panel-body";
-import { getSocialProviderCatalog } from "@/lib/auth/providers-meta";
+import { AuthPagePanel } from "@/components/auth/auth-page-panel";
 import { safeCallbackUrl } from "@/lib/navigation";
 
 type AuthPageProps = {
@@ -22,7 +21,6 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
   const params = await searchParams;
   const mode = params.mode === "signup" ? "signup" : "signin";
   const callbackUrl = safeCallbackUrl(params.callbackUrl);
-  const socialProviders = getSocialProviderCatalog();
 
   return (
     <main className="flex min-h-[70vh] items-center justify-center px-4 py-10">
@@ -41,14 +39,8 @@ export default async function AuthPage({ searchParams }: AuthPageProps) {
               : "Access your reservations and wishlist."}
           </p>
           <div className="mt-8">
-            <Suspense fallback={<p className="animate-pulse text-sm text-white/40">Loading…</p>}>
-              <AuthPanelBody
-                mode={mode}
-                providers={socialProviders}
-                callbackUrl={callbackUrl}
-                authError={params.error}
-                variant="dark"
-              />
+            <Suspense fallback={<p className="animate-pulse text-sm text-white/40">Loading sign-in options…</p>}>
+              <AuthPagePanel mode={mode} callbackUrl={callbackUrl} authError={params.error} />
             </Suspense>
           </div>
           <p className="mt-6 text-center text-sm text-white/50">

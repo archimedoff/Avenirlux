@@ -5,9 +5,11 @@ import Google from "next-auth/providers/google";
 import Twitter from "next-auth/providers/twitter";
 
 import { getGoogleOAuthCredentials } from "@/lib/auth/google-env";
+import { logOAuthDebug } from "@/lib/auth/oauth-debug";
 import type { SocialProviderId } from "@/lib/auth/social-types";
 
 export function buildOAuthProviders(): Provider[] {
+  logOAuthDebug("buildOAuthProviders");
   const providers: Provider[] = [];
 
   const google = getGoogleOAuthCredentials();
