@@ -60,6 +60,10 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .font-display {
   font-family: var(--font-fraunces), ui-serif, Georgia, "Times New Roman", serif;
   font-optical-sizing: auto;
@@ -141,6 +145,24 @@ body {
   background:
     radial-gradient(ellipse 110% 70% at 50% 5%, rgba(255, 255, 255, 0.1), transparent 60%),
     radial-gradient(ellipse 70% 45% at 80% 85%, rgba(255, 255, 255, 0.05), transparent 58%);
+}
+
+.luxury-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(9, 9, 11, 0.3) transparent;
+}
+
+.luxury-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.luxury-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.luxury-scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: rgba(9, 9, 11, 0.25);
 }
 
 .glass-card {

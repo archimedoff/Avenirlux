@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { BrandMark } from "@/components/brand-mark";
+
 const nav = [
   { href: "/", label: "Explore" },
   { href: "/hotels", label: "Stays" },
@@ -31,16 +33,15 @@ export function SiteHeader() {
         scrolled ? "glass-header-scrolled" : "border-transparent bg-transparent"
       }`}
     >
-      <div className="mx-auto flex h-[3.25rem] max-w-[var(--container)] items-center justify-between gap-3 px-3 sm:h-14 sm:gap-4 sm:px-5 lg:px-8">
+      <div className="mx-auto flex h-[3.35rem] max-w-[var(--container)] items-center justify-between gap-3 px-3 sm:h-[3.6rem] sm:gap-4 sm:px-5 lg:px-8">
         <Link
           href="/"
-          className="group flex items-center gap-2.5 text-[var(--foreground)] transition-opacity duration-300 hover:opacity-[0.88]"
+          className="group flex items-center gap-3 text-[var(--foreground)] transition-opacity duration-300 hover:opacity-[0.9]"
         >
-          <span className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-[0.65rem] bg-gradient-to-br from-zinc-800 to-[var(--luxury-ink)] text-xs font-semibold tracking-tight text-white shadow-[var(--shadow-sm)] ring-1 ring-white/15 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03] group-hover:shadow-[0_8px_28px_rgba(9,9,11,0.22)]">
-            <span className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/10 to-white/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100" aria-hidden />
-            L
+          <BrandMark className="transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-hover:shadow-[0_8px_24px_rgba(9,9,11,0.18)]" />
+          <span className="font-display text-[0.9375rem] font-medium tracking-[-0.03em] sm:text-base">
+            AvenirLux
           </span>
-          <span className="text-[0.875rem] font-semibold tracking-[-0.02em] sm:text-[0.9375rem]">LuxeStay</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

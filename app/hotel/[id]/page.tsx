@@ -25,22 +25,29 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
   if (!hotel) notFound();
 
   const similarStays = getSimilarHotels(hotel.id, 3);
-  const amenityIcons: Record<string, string> = {
-    Pool: "◉",
-    Spa: "✦",
-    Yoga: "◌",
-    Butler: "◆",
-    Dining: "●",
-    Concierge: "◍",
-    Villas: "◈",
-    Onsen: "◎",
-    Garden: "◐",
-  };
+  const amenityIcons = ["✦", "◉", "◌", "◈", "◐", "◎", "◆", "●"];
+  const poeticLine = `Dawn light over ${hotel.city}, long shadows, and spaces designed to quiet the mind.`;
+  const experienceNarrative = `${hotel.description} The rhythm here is intentionally slow: mornings unfold with natural light, afternoons flow between water and wellness, and evenings return to intimate dining and deep stillness. Every touchpoint is discreet, personal, and composed for guests who value privacy over spectacle.`;
 
   return (
-    <main className="space-y-8 pb-8 sm:space-y-10">
+    <main className="space-y-8 pb-28 sm:space-y-10 lg:pb-10">
       <section className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--luxury-warm)] shadow-[var(--shadow-xl)]">
-        <div className="relative aspect-[5/6] w-full sm:aspect-[16/9] lg:aspect-[21/9]">
+        <div className="absolute inset-x-0 top-0 z-20 p-4 sm:p-6">
+          <div className="glass-card-soft flex items-center justify-between rounded-full px-3 py-2 sm:px-4">
+            <Link href="/hotels" className="btn-ghost !px-2 text-xs sm:text-sm">
+              ← All stays
+            </Link>
+            <div className="flex items-center gap-2">
+              <button type="button" className="btn-icon !h-8 !w-8 rounded-full !p-0 text-xs">
+                ♡
+              </button>
+              <button type="button" className="btn-icon !h-8 !w-8 rounded-full !p-0 text-xs">
+                ↗
+              </button>
+            </div>
+          </div>
+        </div>
+        <div className="relative aspect-[5/6] w-full sm:aspect-[16/9] lg:aspect-[24/9]">
           <img
             src={hotel.image}
             alt={hotel.name}
@@ -48,13 +55,16 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/78" aria-hidden />
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_120%_70%_at_50%_0%,rgba(255,255,255,0.18)_0%,transparent_60%)]" aria-hidden />
-          <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-8 lg:p-10">
+          <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-8 lg:p-12">
             <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/75">{hotel.city}</p>
-            <h1 className="font-display mt-3 max-w-4xl text-[2rem] font-medium leading-[1.05] tracking-[-0.03em] text-white drop-shadow-[0_6px_32px_rgba(0,0,0,0.45)] sm:text-[2.7rem] lg:text-[3.35rem]">
+            <h1 className="font-display mt-3 max-w-5xl text-[2rem] font-medium leading-[1.03] tracking-[-0.035em] text-white drop-shadow-[0_6px_32px_rgba(0,0,0,0.45)] sm:text-[2.7rem] lg:text-[3.7rem]">
               {hotel.name}
             </h1>
             <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-white/78 sm:text-base">
-              {hotel.location}, {hotel.country}
+              ⌖ {hotel.location}, {hotel.country}
+            </p>
+            <p className="font-display mt-4 max-w-3xl text-[1.02rem] italic leading-relaxed text-white/82 sm:text-[1.14rem]">
+              {poeticLine}
             </p>
           </div>
         </div>
@@ -81,7 +91,12 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
         <div className="space-y-7">
           <section className="glass-card space-y-6 p-7 sm:p-10">
             <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
-              <p className="max-w-3xl text-[0.97rem] leading-[1.75] text-[var(--foreground-muted)]">{hotel.description}</p>
+              <div className="space-y-4">
+                <h2 className="font-display text-2xl font-medium tracking-[-0.03em] text-[var(--luxury-ink)] sm:text-3xl">
+                  Crafted for quiet luxury
+                </h2>
+                <p className="max-w-3xl text-[0.97rem] leading-[1.75] text-[var(--foreground-muted)]">{experienceNarrative}</p>
+              </div>
               <p className="badge-dark w-fit shrink-0 px-4 py-2 text-[0.8125rem] font-semibold">
                 ★ {hotel.rating} · {hotel.reviews} reviews
               </p>
@@ -91,21 +106,53 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
                 Amenities
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {hotel.amenities.map((amenity) => {
-                  const icon = Object.keys(amenityIcons).find((key) => amenity.includes(key));
+                {hotel.amenities.map((amenity, index) => {
                   return (
                     <article
                       key={amenity}
                       className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-xs)] transition-[transform,box-shadow,border-color] duration-300 hover:-translate-y-0.5 hover:border-[var(--border-strong)] hover:shadow-[var(--shadow-sm)]"
                     >
                       <p className="text-sm font-medium text-[var(--foreground)]">
-                        <span className="mr-2 text-[var(--foreground-muted)]">{icon ? amenityIcons[icon] : "○"}</span>
+                        <span className="mr-2 text-[var(--foreground-muted)]">{amenityIcons[index % amenityIcons.length]}</span>
                         {amenity}
                       </p>
                     </article>
                   );
                 })}
               </div>
+            </div>
+          </section>
+
+          <section className="glass-card space-y-5 p-7 sm:p-10">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">
+              Curated experiences
+            </p>
+            <div className="grid gap-4 sm:grid-cols-3">
+              {[
+                "Private sunrise ritual",
+                "Chef-led local tasting",
+                "Signature wellness journey",
+              ].map((item) => (
+                <article key={item} className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-xs)]">
+                  <p className="text-sm font-medium text-[var(--foreground)]">{item}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="glass-card space-y-5 p-7 sm:p-10">
+            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">House rules</p>
+            <div className="grid gap-2">
+              {[
+                "Check-in from 3:00 PM",
+                "No parties or events",
+                "Quiet hours after 10:00 PM",
+                "Respect resort privacy standards",
+              ].map((rule) => (
+                <p key={rule} className="text-sm text-[var(--foreground-muted)]">
+                  • {rule}
+                </p>
+              ))}
             </div>
           </section>
 
@@ -155,6 +202,14 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
           </p>
           <div className="space-y-3">
             <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+              Check-in
+              <input type="date" className="input-premium mt-2" />
+            </label>
+            <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
+              Check-out
+              <input type="date" className="input-premium mt-2" />
+            </label>
+            <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
               Guests
               <select className="input-premium mt-2">
                 <option>2 guests</option>
@@ -182,6 +237,10 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
               </div>
             </label>
           </div>
+          <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4">
+            <p className="text-xs font-medium text-[var(--foreground-subtle)]">{formatUsd(hotel.pricePerNight)} × 3 nights</p>
+            <p className="mt-2 text-base font-semibold text-[var(--foreground)]">Total {formatUsd(hotel.pricePerNight * 3)}</p>
+          </div>
           <p className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)]/60 p-4 text-sm leading-relaxed text-[var(--foreground-muted)]">
             Flexible cancellation up to 7 days before arrival.
           </p>
@@ -205,12 +264,25 @@ export default async function HotelDetailPage({ params }: HotelDetailPageProps) 
             </h2>
           </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div className="luxury-scrollbar flex snap-x snap-mandatory gap-6 overflow-x-auto pb-2">
           {similarStays.map((similarHotel) => (
-            <HotelCard key={similarHotel.id} hotel={similarHotel} />
+            <div key={similarHotel.id} className="min-w-[88%] snap-start sm:min-w-[48%] xl:min-w-[33%]">
+              <HotelCard hotel={similarHotel} />
+            </div>
           ))}
         </div>
       </section>
+      <div className="fixed inset-x-3 bottom-3 z-40 rounded-[var(--radius-lg)] border border-white/60 bg-white/85 p-3 shadow-[var(--shadow-lg)] backdrop-blur-xl sm:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold text-[var(--foreground)]">
+            {formatUsd(hotel.pricePerNight)}
+            <span className="ml-1 text-xs font-medium text-[var(--foreground-subtle)]">/ night</span>
+          </p>
+          <Link href={`/booking?hotelId=${hotel.id}`} className="btn-primary !py-2.5 !px-4 text-xs">
+            Reserve
+          </Link>
+        </div>
+      </div>
     </main>
   );
 }
