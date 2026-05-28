@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 
 import { authConfig } from "@/auth.config";
+import { resolveRole } from "@/lib/auth/roles";
 import { userRepository } from "@/lib/db/repositories/user-repository";
 
 function parseCredentials(credentials: Record<string, unknown> | undefined) {
@@ -30,8 +31,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const valid = await userRepository.verifyPassword(user, parsed.password);
         if (!valid) return null;
 
+        const role = resolveRole(user.email, user.role ?? "guest");
         return {
           id: user.id,
+          role,
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           firstName: user.firstName,

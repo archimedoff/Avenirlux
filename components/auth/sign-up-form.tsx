@@ -15,6 +15,7 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [listProperty, setListProperty] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: FormEvent) => {
@@ -24,7 +25,7 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
     const reg = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstName, lastName, email, password }),
+      body: JSON.stringify({ firstName, lastName, email, password, listProperty }),
     });
     if (!reg.ok) {
       const data = await reg.json().catch(() => ({}));
@@ -41,7 +42,7 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
     }
     await mergeGuestFavorites();
     onSuccess?.();
-    router.push("/account");
+    router.push(listProperty ? "/host" : "/account");
     router.refresh();
   };
 
@@ -65,6 +66,10 @@ export function SignUpForm({ onSuccess, onSwitch }: Props) {
       <label className="block text-xs font-semibold uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
         Password
         <input type="password" required minLength={8} value={password} onChange={(e) => setPassword(e.target.value)} className="input-premium mt-2" placeholder="At least 8 characters" />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-[var(--foreground-muted)]">
+        <input type="checkbox" checked={listProperty} onChange={(e) => setListProperty(e.target.checked)} />
+        I want to list my property on AvenirLux
       </label>
       <button type="submit" disabled={loading} className="btn-primary w-full py-3.5">
         {loading ? "Creating account…" : "Create account"}

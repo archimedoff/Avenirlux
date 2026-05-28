@@ -4,3 +4,7 @@ node_modules
 
 data/*.json
 !data/.gitkeep
+
+data/listings.json
+
+data/booking-requests.json

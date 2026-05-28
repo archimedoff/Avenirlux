@@ -79,7 +79,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Link href="/hotels" className="btn-secondary text-[0.8125rem] !py-2 !px-3.5 !font-medium">
+          <Link href="/list-property" className="btn-secondary text-[0.8125rem] !py-2 !px-3.5 !font-medium">
             List property
           </Link>
           <UserMenu />

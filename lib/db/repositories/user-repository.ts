@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
 
 import { readJson, writeJson } from "@/lib/db/file-store";
-import type { ConciergePreferences, PublicUser, UserProfile, UserRecord } from "@/lib/db/types";
+import type { ConciergePreferences, PublicUser, UserProfile, UserRecord, UserRole } from "@/lib/db/types";
 
 const FILE = "users.json";
 
@@ -14,6 +14,7 @@ export interface UserRepository {
     password: string;
     firstName: string;
     lastName: string;
+    role?: UserRole;
   }): Promise<PublicUser>;
   updateProfile(id: string, profile: Partial<UserProfile>): Promise<PublicUser | null>;
   updateConcierge(id: string, prefs: Partial<ConciergePreferences>): Promise<PublicUser | null>;
@@ -41,21 +42,26 @@ export class FileUserRepository implements UserRepository {
 
   async findByEmail(email: string) {
     const users = await this.all();
-    return users.find((u) => u.email.toLowerCase() === email.toLowerCase()) ?? null;
+    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+    if (!user) return null;
+    return { ...user, role: user.role ?? "guest" };
   }
 
   async findById(id: string) {
     const users = await this.all();
-    return users.find((u) => u.id === id) ?? null;
+    const user = users.find((u) => u.id === id);
+    if (!user) return null;
+    return { ...user, role: user.role ?? "guest" };
   }
 
-  async create(input: { email: string; password: string; firstName: string; lastName: string }) {
+  async create(input: { email: string; password: string; firstName: string; lastName: string; role?: UserRole }) {
     const users = await this.all();
     if (users.some((u) => u.email.toLowerCase() === input.email.toLowerCase())) {
       throw new Error("EMAIL_EXISTS");
     }
     const user: UserRecord = {
       id: randomUUID(),
+      role: input.role ?? "guest",
       email: input.email.toLowerCase().trim(),
       passwordHash: await bcrypt.hash(input.password, 12),
       firstName: input.firstName.trim(),

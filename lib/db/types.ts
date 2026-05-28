@@ -5,12 +5,55 @@ export type ConciergePreferences = {
   transportNotes?: string;
 };
 
+export type UserRole = "guest" | "host" | "admin";
+
+export type ListingStatus = "draft" | "pending_review" | "published" | "rejected";
+
+export type HostListingRecord = {
+  id: string;
+  ownerId: string;
+  status: ListingStatus;
+  name: string;
+  city: string;
+  country: string;
+  location: string;
+  description: string;
+  image: string;
+  gallery: string[];
+  amenities: string[];
+  categories: string[];
+  pricePerNight: number;
+  rooms: { id: string; name: string; description: string; pricePerNight: number; maxGuests: number }[];
+  coordinates: { lat: number; lng: number };
+  cancellationPolicy: string;
+  commissionRate: number;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string;
+};
+
+export type BookingRequestRecord = {
+  id: string;
+  listingId: string;
+  ownerId: string;
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  guests: number;
+  roomName: string;
+  total: number;
+  status: "pending" | "confirmed" | "declined";
+  createdAt: string;
+};
+
 export type UserProfile = {
   phone?: string;
   country?: string;
 };
 
 export type UserRecord = {
+  role: UserRole;
   id: string;
   email: string;
   passwordHash: string;

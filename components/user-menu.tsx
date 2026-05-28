@@ -61,6 +61,16 @@ export function UserMenu() {
       {open && (
         <div className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[12rem] overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] py-1 shadow-[var(--shadow-lg)]">
           <p className="border-b border-[var(--border)] px-4 py-3 text-sm font-medium text-[var(--foreground)]">{label}</p>
+          {session.user.role === "host" || session.user.role === "admin" ? (
+            <Link href="/host" className="block px-4 py-2.5 text-sm text-[var(--foreground-muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]" onClick={() => setOpen(false)}>
+              Host studio
+            </Link>
+          ) : null}
+          {session.user.role === "admin" ? (
+            <Link href="/admin" className="block px-4 py-2.5 text-sm text-[var(--foreground-muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]" onClick={() => setOpen(false)}>
+              Admin
+            </Link>
+          ) : null}
           <Link href="/account" className="block px-4 py-2.5 text-sm text-[var(--foreground-muted)] transition-colors hover:bg-[var(--surface-muted)] hover:text-[var(--foreground)]" onClick={() => setOpen(false)}>
             Your account
           </Link>
