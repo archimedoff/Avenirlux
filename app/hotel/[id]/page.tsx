@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { FavoriteButton } from "@/components/favorite-button";
 import { HotelBookingSidebar } from "@/components/hotel-booking-sidebar";
 import { HotelCard } from "@/components/hotel-card";
+import { HotelTrackView } from "@/components/hotel-track-view";
 import { buildStayQuery } from "@/lib/booking-utils";
 import { fetchHotelById, fetchSimilarHotels } from "@/lib/hotels-data";
 
@@ -53,12 +55,14 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
 
   return (
     <main className="space-y-8 pb-28 sm:space-y-10 lg:pb-10">
+      <HotelTrackView id={hotel.id} name={hotel.name} image={hotel.image} city={hotel.city} />
       <section className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--luxury-warm)] shadow-[var(--shadow-xl)]">
         <div className="absolute inset-x-0 top-0 z-20 p-4 sm:p-6">
           <div className="glass-card-soft flex items-center justify-between rounded-full px-3 py-2 sm:px-4">
             <Link href="/hotels" className="btn-ghost !px-2 text-xs sm:text-sm">
               ← All stays
             </Link>
+            <FavoriteButton hotelId={hotel.id} size="sm" />
           </div>
         </div>
         <div className="relative aspect-[5/6] w-full sm:aspect-[16/9] lg:aspect-[24/9]">

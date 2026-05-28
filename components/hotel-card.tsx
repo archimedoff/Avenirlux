@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { FavoriteButton } from "@/components/favorite-button";
 import { formatUsd } from "@/lib/booking-utils";
 import type { Hotel } from "@/lib/hotel-types";
 
@@ -52,12 +53,7 @@ export function HotelCard({ hotel, detailQueryString }: HotelCardProps) {
             >
               {hotel.availability === "available" ? "Available" : "Limited"}
             </span>
-            <span
-              aria-label="Favorite stay"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/30 bg-black/20 text-white/90 backdrop-blur-md transition-[transform,background-color,border-color] duration-300 group-hover:scale-105 group-hover:border-white/60 group-hover:bg-black/35"
-            >
-              ♡
-            </span>
+            <FavoriteButton hotelId={hotel.id} size="sm" />
           </div>
           <div className="absolute bottom-0 left-0 right-0 z-[1] flex items-end justify-between gap-3 p-4 sm:p-5">
             <p className="max-w-[65%] font-display text-lg font-medium leading-snug tracking-[-0.02em] text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] sm:text-xl">

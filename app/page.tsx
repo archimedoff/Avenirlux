@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { RecentlyViewedStrip } from "@/components/recently-viewed-strip";
 import { SearchBar } from "@/components/search-bar";
 import { getDestinations } from "@/lib/hotels-service";
 
@@ -66,6 +67,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <RecentlyViewedStrip />
 
       <section className="space-y-8 sm:space-y-9">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
