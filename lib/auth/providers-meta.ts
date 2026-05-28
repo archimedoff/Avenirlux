@@ -1,10 +1,11 @@
+import { isGoogleOAuthConfigured } from "@/lib/auth/google-env";
 import type { SocialProviderId, SocialProviderMeta } from "@/lib/auth/social-types";
 import { SOCIAL_PROVIDER_META } from "@/lib/auth/social-types";
 
 function isConfigured(id: SocialProviderId): boolean {
   switch (id) {
     case "google":
-      return Boolean(process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET);
+      return isGoogleOAuthConfigured();
     case "apple":
       return Boolean(process.env.AUTH_APPLE_ID && process.env.AUTH_APPLE_SECRET);
     case "facebook":

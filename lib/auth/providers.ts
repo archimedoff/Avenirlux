@@ -4,16 +4,18 @@ import Facebook from "next-auth/providers/facebook";
 import Google from "next-auth/providers/google";
 import Twitter from "next-auth/providers/twitter";
 
+import { getGoogleOAuthCredentials } from "@/lib/auth/google-env";
 import type { SocialProviderId } from "@/lib/auth/social-types";
 
 export function buildOAuthProviders(): Provider[] {
   const providers: Provider[] = [];
 
-  if (process.env.AUTH_GOOGLE_ID && process.env.AUTH_GOOGLE_SECRET) {
+  const google = getGoogleOAuthCredentials();
+  if (google.clientId && google.clientSecret) {
     providers.push(
       Google({
-        clientId: process.env.AUTH_GOOGLE_ID,
-        clientSecret: process.env.AUTH_GOOGLE_SECRET,
+        clientId: google.clientId,
+        clientSecret: google.clientSecret,
         allowDangerousEmailAccountLinking: true,
       }),
     );
