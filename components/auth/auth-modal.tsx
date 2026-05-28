@@ -53,7 +53,11 @@ export function AuthModal({
         aria-label="Close"
         onClick={onClose}
       />
-      <div className="auth-modal-panel page-enter relative z-[1] w-full max-w-md overflow-hidden sm:max-w-[26rem]">
+      <div
+        className="auth-modal-panel page-enter relative z-[1] w-full max-w-md overflow-hidden sm:max-w-[26rem]"
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+      >
         <div className="auth-modal-panel__glow pointer-events-none absolute inset-0" aria-hidden />
         <div className="relative p-6 sm:p-8">
           <div className="mb-6 flex items-start justify-between gap-4">
@@ -89,7 +93,7 @@ export function AuthModal({
           <AuthPanelBody
             mode={mode}
             providers={providers}
-            callbackUrl="/account"
+            callbackUrl="/"
             providersLoading={providersLoading}
             providersError={providersError}
             onSuccess={onClose}

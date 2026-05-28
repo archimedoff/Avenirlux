@@ -14,7 +14,7 @@ export function AppProviders({
   socialProviders?: SocialProviderState[];
 }) {
   return (
-    <SessionProvider>
+    <SessionProvider basePath="/api/auth" refetchOnWindowFocus={false}>
       <AuthModalProvider socialProviders={socialProviders}>{children}</AuthModalProvider>
     </SessionProvider>
   );
