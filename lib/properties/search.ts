@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { isDatabaseConfigured } from "@/lib/db/config";
 import { propertyToHotel, type PropertyWithRelations } from "@/lib/db/mappers/property-mapper";
 import type { Hotel } from "@/lib/hotel-types";
 
@@ -20,7 +19,6 @@ export type MarketplaceSearchQuery = {
 };
 
 export async function searchPublishedProperties(query: MarketplaceSearchQuery): Promise<Hotel[]> {
-  if (!isDatabaseConfigured()) return [];
 
   const where: Prisma.PropertyWhereInput = {
     published: true,
@@ -64,7 +62,6 @@ export async function searchPublishedProperties(query: MarketplaceSearchQuery): 
 }
 
 export async function getPublishedPropertyById(publicId: string): Promise<Hotel | null> {
-  if (!isDatabaseConfigured()) return null;
   const { fromPublicPropertyId } = await import("@/lib/properties/ids");
   const id = fromPublicPropertyId(publicId);
   const row = await prisma.property.findFirst({
@@ -80,7 +77,6 @@ export async function getSimilarPublishedProperties(
   city: string,
   limit = 6
 ): Promise<Hotel[]> {
-  if (!isDatabaseConfigured()) return [];
   const { fromPublicPropertyId } = await import("@/lib/properties/ids");
   const id = fromPublicPropertyId(publicId);
   const rows = await prisma.property.findMany({

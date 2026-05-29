@@ -53,3 +53,20 @@ npm run dev
 ## Fallback
 
 Without `DATABASE_URL`, the app uses local JSON under `data/` (development only). Production should always set Supabase URLs.
+
+## Troubleshooting P1000 (authentication failed)
+
+1. Reset the database password in Supabase → **Project Settings → Database**.
+2. Copy the **URI** connection strings again (Session pooler + Direct).
+3. If the password contains `@`, `#`, or `%`, URL-encode it in the connection string.
+4. `DATABASE_URL` must use the **transaction pooler** (port **6543**, `?pgbouncer=true`).
+5. `DIRECT_URL` must use **direct** connection (port **5432**) for `db push` / migrations.
+
+Verify:
+
+```bash
+npm run db:verify
+npm run db:push
+npm run db:seed
+npm run db:import
+```

@@ -1,12 +1,13 @@
+import { auth } from "@/auth";
 import { runConciergeChat } from "@/lib/concierge/engine";
 import { checkConciergeRateLimit } from "@/lib/concierge/rate-limit";
 import type { ConciergeChatRequest, ConciergeStreamEvent, TripMode } from "@/lib/concierge/types";
+import { conversationRepository } from "@/lib/db/repositories/conversation-repository";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const ROUTE_TIMEOUT_MS = 58_000;
-
 const VALID_MODES = new Set<TripMode>(["general", "romantic", "family", "business"]);
 
 function clientKey(request: Request): string {
@@ -51,6 +52,10 @@ export async function POST(request: Request) {
   }
 
   const mode = body.mode && VALID_MODES.has(body.mode) ? body.mode : undefined;
+  const conversationId =
+    typeof body.conversationId === "string" && body.conversationId.trim()
+      ? body.conversationId.trim()
+      : null;
   const history = Array.isArray(body.history)
     ? body.history
         .filter(
@@ -63,19 +68,53 @@ export async function POST(request: Request) {
         .map((m) => ({ role: m.role, content: m.content.trim().slice(0, 8000) }))
     : [];
 
+  const session = await auth();
+  const userId = session?.user?.id ?? null;
+
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
       const routeAbort = AbortSignal.timeout(ROUTE_TIMEOUT_MS);
+      let assistantText = "";
+      let persistedConversationId = conversationId;
+
       try {
-        const chatPromise = (async () => {
-          for await (const event of runConciergeChat({ message, history, mode })) {
-            if (routeAbort.aborted) break;
-            controller.enqueue(encoder.encode(sseLine(event)));
-            if (event.type === "error" || event.type === "failure") break;
+        for await (const event of runConciergeChat({ message, history, mode })) {
+          if (routeAbort.aborted) break;
+          if (event.type === "token") {
+            assistantText += event.text;
           }
-        })();
-        await chatPromise;
+          if (event.type === "meta" && persistedConversationId) {
+            (event as { conversationId?: string }).conversationId = persistedConversationId;
+          }
+          controller.enqueue(encoder.encode(sseLine(event)));
+          if (event.type === "error" || event.type === "failure") break;
+        }
+
+        if (assistantText.trim().length > 0) {
+          try {
+            persistedConversationId = await conversationRepository.appendExchange({
+              userId,
+              conversationId: persistedConversationId,
+              userMessage: message,
+              assistantMessage: assistantText.trim(),
+              mode,
+            });
+            controller.enqueue(
+              encoder.encode(
+                sseLine({
+                  type: "meta",
+                  mode: mode ?? "general",
+                  provider: "openai",
+                  aiStatus: "live",
+                  conversationId: persistedConversationId,
+                }),
+              ),
+            );
+          } catch (err) {
+            console.error("[concierge/chat] persist conversation", err);
+          }
+        }
       } catch {
         controller.enqueue(encoder.encode(sseLine({ type: "failure", retryable: true })));
         controller.enqueue(encoder.encode(sseLine({ type: "done" })));

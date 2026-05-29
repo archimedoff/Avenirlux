@@ -3,11 +3,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { canAccessHost } from "@/lib/auth/roles";
 import { listingsRepository } from "@/lib/db/repositories/listings-repository";
+import { userRepository } from "@/lib/db/repositories/user-repository";
 import type { ListingMetadata } from "@/lib/listing/types";
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.id || !canAccessHost(session.user.role)) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const listings = await listingsRepository.listByOwner(session.user.id);
@@ -16,9 +17,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   const session = await auth();
-  if (!session?.user?.id || !canAccessHost(session.user.role)) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  if (!canAccessHost(session.user.role)) {
+    await userRepository.promoteToHost(session.user.id);
+  }
+
   const body = await request.json();
   const categories = Array.isArray(body.categories) ? body.categories.map(String) : ["resort"];
   const propertyType = body.metadata?.propertyType ?? body.propertyType;

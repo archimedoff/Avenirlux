@@ -1,3 +1,6 @@
+import { config } from "dotenv";
+config({ path: ".env.local" });
+
 /**
  * One-time import from data/*.json into Supabase (run after db:push).
  * Usage: npm run db:import

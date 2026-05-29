@@ -101,4 +101,12 @@ export class PrismaUserRepository implements UserRepository {
     });
     return userToPublic(user);
   }
+
+  async promoteToHost(id: string) {
+    const user = await prisma.user.update({
+      where: { id },
+      data: { role: "host" },
+    });
+    return userToPublic(user);
+  }
 }

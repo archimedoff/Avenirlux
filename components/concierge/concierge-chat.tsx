@@ -40,6 +40,7 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
   const [providerLabel, setProviderLabel] = useState<string | null>(null);
   const [retryPayload, setRetryPayload] = useState<RetryPayload | null>(null);
   const [openAiConfigured, setOpenAiConfigured] = useState<boolean | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -119,7 +120,7 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         const res = await fetch("/api/concierge/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ message: trimmed, mode: activeMode, history }),
+          body: JSON.stringify({ message: trimmed, mode: activeMode, history, conversationId }),
           signal: abort.signal,
         });
 
@@ -174,6 +175,7 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
               assistantContent += event.text;
               upsertAssistant();
             } else if (event.type === "meta") {
+              if (event.conversationId) setConversationId(event.conversationId);
               assistantMeta = { mode: event.mode, city: event.city };
               setProviderLabel(event.aiStatus === "live" ? t("liveCounsel") : null);
               upsertAssistant();
