@@ -68,4 +68,9 @@ export class FileBookingRequestsRepository {
   }
 }
 
-export const bookingRequestsRepository = new FileBookingRequestsRepository();
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { PrismaBookingRequestsRepository } from "@/lib/db/repositories/prisma/booking-requests-repository";
+
+export const bookingRequestsRepository = isDatabaseConfigured()
+  ? new PrismaBookingRequestsRepository()
+  : new FileBookingRequestsRepository();

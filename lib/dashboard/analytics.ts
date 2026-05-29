@@ -1,3 +1,8 @@
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { listingsRepository } from "@/lib/db/repositories/listings-repository";
+import { bookingRequestsRepository } from "@/lib/db/repositories/booking-requests-repository";
+import { prisma } from "@/lib/db/prisma";
+
 import { readJson } from "@/lib/db/file-store";
 import type { UserBookingRecord } from "@/lib/db/types";
 import type { BookingRequestRecord, HostListingRecord, UserRecord } from "@/lib/db/types";
@@ -66,6 +71,36 @@ const MOCK_HOTELS = [
 ];
 
 export async function getAdminAnalytics(): Promise<AdminAnalytics> {
+  if (isDatabaseConfigured()) {
+    const [bookings, users, listings] = await Promise.all([
+      prisma.booking.findMany({ where: { kind: "guest_booking" } }),
+      prisma.user.findMany(),
+      prisma.property.findMany(),
+    ]);
+    const bookingRows = bookings.map((b) => ({ total: b.total, createdAt: b.createdAt.toISOString(), id: b.id, confirmationRef: b.confirmationRef ?? b.id, hotelName: b.hotelName ?? "Stay" }));
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const revenueTotal = bookingRows.reduce((s, b) => s + b.total, 0);
+    const revenueThisMonth = bookingRows.filter((b) => new Date(b.createdAt).getMonth() === thisMonth).reduce((s, b) => s + b.total, 0);
+    const commissionRate = 0.12;
+    const baseBookings = bookingRows.length > 0 ? bookingRows : generateMockBookings();
+    return {
+      totalBookings: baseBookings.length || 156,
+      revenueTotal: revenueTotal || 478200,
+      revenueThisMonth: revenueThisMonth || 62400,
+      activeUsers: users.length || 248,
+      totalHosts: users.filter((u) => u.role === "host" || u.role === "admin").length || 34,
+      publishedListings: listings.filter((l) => l.published).length || 28,
+      commissionTotal: Math.round((revenueTotal || 478200) * commissionRate),
+      commissionRate,
+      bookingTrend: bookingCountTrend(baseBookings.length ? baseBookings : generateMockBookings()),
+      revenueTrend: buildTrendFromBookings(baseBookings.length ? baseBookings : generateMockBookings()),
+      reservationActivity: baseBookings.slice(0, 8).map((b) => ({ id: b.id, label: `${b.hotelName} · ${b.confirmationRef}`, amount: b.total, at: b.createdAt })),
+      hotelPerformance: MOCK_HOTELS,
+      occupancyOverview: 72,
+    };
+  }
+
   const [bookings, users, listings] = await Promise.all([
     readJson<UserBookingRecord[]>("bookings.json", []),
     readJson<UserRecord[]>("users.json", []),
@@ -111,6 +146,33 @@ export async function getAdminAnalytics(): Promise<AdminAnalytics> {
 }
 
 export async function getHostAnalytics(ownerId: string): Promise<HostAnalytics> {
+  if (isDatabaseConfigured()) {
+    const mine = await listingsRepository.listByOwner(ownerId);
+    const myRequests = await bookingRequestsRepository.listByOwner(ownerId);
+    const confirmed = myRequests.filter((r) => r.status === "confirmed");
+    const revenueTotal = confirmed.reduce((s, r) => s + r.total, 0);
+    const now = new Date();
+    const revenueThisMonth = confirmed
+      .filter((r) => new Date(r.createdAt).getMonth() === now.getMonth())
+      .reduce((s, r) => s + r.total, 0);
+    const mockBookings = myRequests.length ? myRequests : generateMockRequests(ownerId);
+    return {
+      occupancyRate: mine.length ? 68 + mine.length * 3 : 74,
+      revenueTotal: revenueTotal || 42800,
+      revenueThisMonth: revenueThisMonth || 11200,
+      pendingRequests: myRequests.filter((r) => r.status === "pending").length,
+      publishedListings: mine.filter((l) => l.status === "published").length,
+      bookingTrend: bookingCountTrend(mockBookings),
+      revenueTrend: buildTrendFromBookings(mockBookings),
+      reservationActivity: mockBookings.slice(0, 6).map((r) => ({
+        id: r.id,
+        label: `${"guestName" in r ? r.guestName : "Guest"} · ${r.checkIn}`,
+        amount: r.total,
+        at: r.createdAt,
+      })),
+    };
+  }
+
   const [listings, requests] = await Promise.all([
     readJson<HostListingRecord[]>("listings.json", []),
     readJson<BookingRequestRecord[]>("booking-requests.json", []),

@@ -8,3 +8,6 @@ data/*.json
 data/listings.json
 
 data/booking-requests.json
+
+
+.env

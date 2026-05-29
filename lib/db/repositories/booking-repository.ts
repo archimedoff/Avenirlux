@@ -59,4 +59,9 @@ export class FileBookingRepository implements BookingRepository {
   }
 }
 
-export const bookingRepository: BookingRepository = new FileBookingRepository();
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { PrismaBookingRepository } from "@/lib/db/repositories/prisma/booking-repository";
+
+export const bookingRepository: BookingRepository = isDatabaseConfigured()
+  ? new PrismaBookingRepository()
+  : new FileBookingRepository();

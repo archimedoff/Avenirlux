@@ -50,4 +50,9 @@ export class FileFavoritesRepository implements FavoritesRepository {
   }
 }
 
-export const favoritesRepository: FavoritesRepository = new FileFavoritesRepository();
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { PrismaFavoritesRepository } from "@/lib/db/repositories/prisma/favorites-repository";
+
+export const favoritesRepository: FavoritesRepository = isDatabaseConfigured()
+  ? new PrismaFavoritesRepository()
+  : new FileFavoritesRepository();

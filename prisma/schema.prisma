@@ -1,0 +1,227 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  guest
+  host
+  admin
+}
+
+enum ListingStatus {
+  draft
+  pending_review
+  published
+  rejected
+}
+
+enum PropertyType {
+  hotel
+  apartment
+  studio
+  villa
+  residence
+  boutique_stay
+  penthouse
+  cabin
+  beach_house
+}
+
+enum BookingRecordStatus {
+  pending
+  confirmed
+  declined
+  upcoming
+  completed
+  cancelled
+}
+
+enum BookingKind {
+  host_request
+  guest_booking
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @default("") @map("password_hash")
+  firstName    String   @map("first_name")
+  lastName     String   @map("last_name")
+  role         UserRole @default(guest)
+
+  phone     String?
+  country   String?
+  avatarUrl String? @map("avatar_url")
+
+  conciergeContactChannel    String  @default("email") @map("concierge_contact_channel")
+  conciergePreferredLanguage String  @default("English") @map("concierge_preferred_language")
+  conciergeDietaryNotes      String? @map("concierge_dietary_notes")
+  conciergeTransportNotes    String? @map("concierge_transport_notes")
+  oauthAccounts              Json?   @map("oauth_accounts")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  properties     Property[]
+  hostedBookings Booking[]      @relation("HostBookings")
+  guestBookings  Booking[]      @relation("GuestBookings")
+  conversations  Conversation[]
+  favorites      UserFavorite[]
+
+  @@map("users")
+}
+
+model Property {
+  id     String @id @default(cuid())
+  hostId String @map("host_id")
+  host   User   @relation(fields: [hostId], references: [id], onDelete: Cascade)
+
+  title       String
+  subtitle    String?
+  slug        String        @unique
+  description String        @default("")
+  propertyType PropertyType @map("property_type")
+  status       ListingStatus @default(draft)
+
+  country   String @default("")
+  city      String @default("")
+  address   String @default("")
+  district  String?
+  landmarks String?
+  latitude  Float  @default(0)
+  longitude Float  @default(0)
+
+  guests       Int   @default(2)
+  bedrooms     Int   @default(1)
+  beds         Int   @default(1)
+  bathrooms    Float @default(1)
+  squareMeters Int?  @map("square_meters")
+  floor        Int?
+
+  basePrice    Float  @default(0) @map("base_price")
+  cleaningFee  Float  @default(0) @map("cleaning_fee")
+  weekendPrice Float? @map("weekend_price")
+  currency     String @default("USD")
+
+  coverImage String  @default("") @map("cover_image")
+  published  Boolean @default(false)
+  featured   Boolean @default(false)
+
+  cancellationPolicy String   @default("Flexible cancellation up to 7 days before arrival.") @map("cancellation_policy")
+  commissionRate     Float    @default(0.12) @map("commission_rate")
+  categories         String[] @default([])
+  roomsJson          Json     @default("[]") @map("rooms_json")
+  metadataJson       Json?    @map("metadata_json")
+  unavailableDates   String[] @default([]) @map("unavailable_dates")
+  minNights          Int      @default(1) @map("min_nights")
+  instantBooking     Boolean  @default(false) @map("instant_booking")
+
+  publishedAt DateTime? @map("published_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  images    PropertyImage[]
+  amenities PropertyAmenity[]
+  bookings  Booking[]
+
+  @@index([hostId])
+  @@index([city])
+  @@index([published, featured])
+  @@index([propertyType])
+  @@map("properties")
+}
+
+model PropertyImage {
+  id         String   @id @default(cuid())
+  propertyId String   @map("property_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  url        String
+  sortOrder  Int      @default(0) @map("sort_order")
+  isCover    Boolean  @default(false) @map("is_cover")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([propertyId])
+  @@map("property_images")
+}
+
+model Amenity {
+  id         String            @id
+  label      String
+  icon       String?
+  category   String?
+  properties PropertyAmenity[]
+
+  @@map("amenities")
+}
+
+model PropertyAmenity {
+  propertyId String   @map("property_id")
+  amenityId  String   @map("amenity_id")
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  amenity    Amenity  @relation(fields: [amenityId], references: [id], onDelete: Cascade)
+
+  @@id([propertyId, amenityId])
+  @@map("property_amenities")
+}
+
+model Booking {
+  id          String              @id @default(cuid())
+  kind        BookingKind
+  status      BookingRecordStatus
+  propertyId  String?             @map("property_id")
+  property    Property?           @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  hostId      String              @map("host_id")
+  host        User                @relation("HostBookings", fields: [hostId], references: [id], onDelete: Cascade)
+  guestUserId String?             @map("guest_user_id")
+  guestUser   User?               @relation("GuestBookings", fields: [guestUserId], references: [id], onDelete: SetNull)
+
+  guestName  String @map("guest_name")
+  guestEmail String @map("guest_email")
+  checkIn    String @map("check_in")
+  checkOut   String @map("check_out")
+  guests     Int    @default(2)
+  roomName   String @default("") @map("room_name")
+  total      Float  @default(0)
+
+  confirmationRef String? @map("confirmation_ref")
+  externalHotelId String? @map("external_hotel_id")
+  hotelName       String? @map("hotel_name")
+  hotelImage      String? @map("hotel_image")
+  city            String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([hostId])
+  @@index([propertyId])
+  @@index([guestUserId])
+  @@map("bookings")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  title     String?
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@map("conversations")
+}
+
+model UserFavorite {
+  userId  String @map("user_id")
+  hotelId String @map("hotel_id")
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, hotelId])
+  @@map("user_favorites")
+}

@@ -174,4 +174,9 @@ export class FileUserRepository implements UserRepository {
   }
 }
 
-export const userRepository: UserRepository = new FileUserRepository();
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { PrismaUserRepository } from "@/lib/db/repositories/prisma/user-repository";
+
+export const userRepository: UserRepository = isDatabaseConfigured()
+  ? new PrismaUserRepository()
+  : new FileUserRepository();

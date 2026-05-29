@@ -91,4 +91,9 @@ export class FileListingsRepository implements ListingsRepository {
   }
 }
 
-export const listingsRepository: FileListingsRepository = new FileListingsRepository();
+import { isDatabaseConfigured } from "@/lib/db/config";
+import { PrismaListingsRepository } from "@/lib/db/repositories/prisma/listings-repository";
+
+export const listingsRepository: ListingsRepository = isDatabaseConfigured()
+  ? new PrismaListingsRepository()
+  : new FileListingsRepository();
