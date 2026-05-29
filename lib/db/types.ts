@@ -1,3 +1,5 @@
+import type { ListingMetadata } from "@/lib/listing/types";
+
 export type ConciergePreferences = {
   contactChannel: "email" | "phone" | "whatsapp";
   preferredLanguage: string;
@@ -30,6 +32,7 @@ export type HostListingRecord = {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  metadata?: ListingMetadata;
 };
 
 export type BookingRequestRecord = {

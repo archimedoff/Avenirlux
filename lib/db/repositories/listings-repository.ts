@@ -66,6 +66,7 @@ export class FileListingsRepository implements ListingsRepository {
       rooms: input.rooms ?? [],
       coordinates: input.coordinates ?? { lat: 0, lng: 0 },
       cancellationPolicy: input.cancellationPolicy ?? "Flexible cancellation up to 7 days before arrival.",
+      metadata: input.metadata,
     };
     items.push(listing);
     await this.save(items);

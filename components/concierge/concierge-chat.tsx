@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ConciergeHotelCards } from "@/components/concierge/concierge-hotel-cards";
 import { ConciergeSuggestedPrompts } from "@/components/concierge/concierge-suggested-prompts";
 import { TypingIndicator } from "@/components/concierge/typing-indicator";
+import { useTranslations } from "@/lib/i18n/use-translations";
 import type {
   ConciergeMessage,
   ConciergeStreamEvent,
@@ -21,14 +22,17 @@ type Props = {
   onClose?: () => void;
 };
 
-const MODE_OPTIONS: { id: TripMode; label: string }[] = [
-  { id: "general", label: "Curated" },
-  { id: "romantic", label: "Romantic" },
-  { id: "family", label: "Family" },
-  { id: "business", label: "Business" },
-];
+
 
 export function ConciergeChat({ fullPage = false, onClose }: Props) {
+  const { t } = useTranslations("concierge");
+  const { t: tc } = useTranslations("common");
+  const MODE_OPTIONS: { id: TripMode; label: string }[] = [
+    { id: "general", label: t("modeGeneral") },
+    { id: "romantic", label: t("modeRomantic") },
+    { id: "family", label: t("modeFamily") },
+    { id: "business", label: t("modeBusiness") },
+  ];
   const [messages, setMessages] = useState<ConciergeMessage[]>([]);
   const [input, setInput] = useState("");
   const [tripMode, setTripMode] = useState<TripMode>("general");
@@ -103,13 +107,13 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         if (res.status === 429) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
           assistantContent =
-            data.error ?? "Our concierge is attending to many guests. Please try again shortly.";
+            data.error ?? t("rateLimit");
           upsertAssistant();
           return;
         }
 
         if (!res.ok || !res.body) {
-          assistantContent = "I could not reach the concierge service. Please try again.";
+          assistantContent = t("serviceError");
           upsertAssistant();
           return;
         }
@@ -144,28 +148,28 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
               upsertAssistant();
             } else if (event.type === "meta") {
               assistantMeta = { mode: event.mode, city: event.city };
-              setProviderLabel(event.aiStatus === "live" ? "Live counsel" : null);
+              setProviderLabel(event.aiStatus === "live" ? t("liveCounsel") : null);
               upsertAssistant();
             } else if (event.type === "hotels") {
               assistantHotels = event.hotels;
               upsertAssistant();
             } else if (event.type === "error") {
               assistantContent =
-                "I could not complete that request just now. Please try again in a moment.";
+                t("requestError");
               upsertAssistant();
             }
           }
         }
       } catch (err) {
         if ((err as Error).name === "AbortError") return;
-        assistantContent = "Something interrupted our connection. Please try again.";
+        assistantContent = t("connectionError");
         upsertAssistant();
       } finally {
         setIsThinking(false);
         abortRef.current = null;
       }
     },
-    [isThinking, tripMode, messages],
+    [isThinking, tripMode, messages, t],
   );
 
   const onSubmit = (e: React.FormEvent) => {
@@ -179,10 +183,10 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
     <div className={`concierge-chat ${fullPage ? "concierge-chat--page" : ""}`}>
       <header className="concierge-chat__header">
         <div>
-          <p className="concierge-chat__eyebrow">AvenirLux</p>
-          <h2 className="concierge-chat__title font-display">AI Concierge</h2>
+          <p className="concierge-chat__eyebrow">{t("eyebrow")}</p>
+          <h2 className="concierge-chat__title font-display">{t("title")}</h2>
           <p className="concierge-chat__subtitle">
-            Your private luxury travel counsel
+            {t("subtitle")}
             {providerLabel ? (
               <span className="concierge-chat__provider"> · {providerLabel}</span>
             ) : null}
@@ -191,18 +195,18 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         <div className="concierge-chat__header-actions">
           {fullPage ? (
             <Link href="/" className="concierge-chat__link">
-              Home
+              {tc("home")}
             </Link>
           ) : null}
           {onClose ? (
-            <button type="button" className="concierge-chat__close" onClick={onClose} aria-label="Close concierge">
+            <button type="button" className="concierge-chat__close" onClick={onClose} aria-label={t("close")}>
               ×
             </button>
           ) : null}
         </div>
       </header>
 
-      <div className="concierge-chat__modes" role="tablist" aria-label="Trip mode">
+      <div className="concierge-chat__modes" role="tablist" aria-label={t("tripModeLabel")}>
         {MODE_OPTIONS.map((m) => (
           <button
             key={m.id}
@@ -221,12 +225,12 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
       <div ref={scrollRef} className="concierge-chat__messages">
         {messages.length === 0 && !isThinking ? (
           <div className="concierge-chat__welcome page-enter">
-            <p className="font-display text-xl text-[var(--luxury-ink)]">Good evening. Where shall we take you?</p>
+            <p className="font-display text-xl text-[var(--luxury-ink)]">{t("welcomeTitle")}</p>
             <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
-              Destinations, residences, itineraries, and hidden gems — composed with quiet precision.
+              {t("welcomeBody")}
             </p>
             <p className="mt-3 text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
-              Live residences when you ask for a city
+              {t("welcomeHint")}
             </p>
             <ConciergeSuggestedPrompts onSelect={(msg, mode) => void sendMessage(msg, mode)} disabled={busy} />
           </div>
@@ -255,13 +259,13 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
           type="text"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask for hotels, itineraries, or hidden gems…"
+          placeholder={t("inputPlaceholder")}
           className="concierge-chat__input"
           disabled={busy}
-          aria-label="Message to concierge"
+          aria-label={t("inputAria")}
         />
         <button type="submit" className="btn-primary concierge-chat__send" disabled={busy || !input.trim()}>
-          Send
+          {tc("send")}
         </button>
       </form>
     </div>

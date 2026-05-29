@@ -3,26 +3,33 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { BrandMark } from "@/components/brand-mark";
 import { useAuthModal } from "@/components/auth/auth-modal-provider";
+import { LanguageSwitcher } from "@/components/locale/language-switcher";
 import { UserMenu } from "@/components/user-menu";
 import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
+import { useTranslations } from "@/lib/i18n/use-translations";
 import { isDashboardRoute } from "@/lib/navigation";
-
-const nav = [
-  { href: "/", label: "Explore" },
-  { href: "/hotels", label: "Hotels" },
-  { href: "/concierge", label: "Concierge" },
-];
 
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: session } = useSession();
   const { openAuth } = useAuthModal();
+  const { t: tNav } = useTranslations("nav");
+  const { t: tCommon } = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  const nav = useMemo(
+    () => [
+      { href: "/", label: tNav("explore") },
+      { href: "/hotels", label: tNav("hotels") },
+      { href: "/concierge", label: tNav("concierge") },
+    ],
+    [tNav],
+  );
 
   useBodyScrollLock(open);
 
@@ -56,7 +63,7 @@ export function SiteHeader() {
         >
           <BrandMark className="transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.04] group-hover:shadow-[0_8px_24px_rgba(9,9,11,0.18)]" />
           <span className="font-display text-[0.9375rem] font-medium tracking-[-0.03em] sm:text-base">
-            AvenirLux
+            {tCommon("brand")}
           </span>
         </Link>
 
@@ -86,26 +93,28 @@ export function SiteHeader() {
                   : "text-[var(--foreground-muted)] hover:text-[var(--foreground)]"
               }`}
             >
-              Account
+              {tCommon("account")}
             </Link>
           )}
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
+          <LanguageSwitcher />
           <Link href="/list-property" className="btn-secondary text-[0.8125rem] !py-2 !px-3.5 !font-medium">
-            List property
+            {tNav("listProperty")}
           </Link>
           <UserMenu />
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher />
           <UserMenu />
           <button
             type="button"
             className="btn-icon"
             aria-expanded={open}
             aria-controls="mobile-nav"
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? tCommon("menuClose") : tCommon("menuOpen")}
             onClick={() => setOpen((v) => !v)}
           >
             <span className="sr-only">Menu</span>
@@ -138,34 +147,34 @@ export function SiteHeader() {
           ))}
           {session?.user && (
             <Link href="/account" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
-              Account
+              {tCommon("account")}
             </Link>
           )}
           <Link href="/list-property" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
-            List property
+            {tNav("listProperty")}
           </Link>
           {(role === "host" || role === "admin") && (
             <Link href="/host" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
-              Host studio
+              {tCommon("hostStudio")}
             </Link>
           )}
           {role === "admin" && (
             <Link href="/admin" className="rounded-xl px-4 py-3 text-[0.9375rem] font-medium text-[var(--foreground)] hover:bg-white/70">
-              Admin
+              {tCommon("admin")}
             </Link>
           )}
           {!session?.user && (
             <div className="mt-2 grid grid-cols-2 gap-2">
               <button type="button" onClick={() => openAuth("signin")} className="btn-secondary w-full text-[0.9375rem]">
-                Sign in
+                {tNav("signIn")}
               </button>
               <button type="button" onClick={() => openAuth("signup")} className="btn-primary w-full text-[0.9375rem]">
-                Join
+                {tNav("join")}
               </button>
             </div>
           )}
           <Link href="/hotels" className="btn-primary mt-2 text-center text-[0.9375rem]">
-            Book a stay
+            {tCommon("bookStay")}
           </Link>
         </nav>
       </div>

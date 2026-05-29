@@ -4,6 +4,7 @@ import { useEffect } from "react";
 
 import { AuthPanelBody } from "@/components/auth/auth-panel-body";
 import { useBodyScrollLock } from "@/lib/hooks/use-body-scroll-lock";
+import { useTranslations } from "@/lib/i18n/use-translations";
 import type { SocialProviderState } from "@/lib/auth/social-types";
 
 type AuthMode = "signin" | "signup";
@@ -27,6 +28,8 @@ export function AuthModal({
   onClose,
   onModeChange,
 }: Props) {
+  const { t } = useTranslations("auth");
+  const { t: tc } = useTranslations("common");
   useBodyScrollLock(open);
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export function AuthModal({
       <button
         type="button"
         className="auth-modal-backdrop absolute inset-0"
-        aria-label="Close"
+        aria-label={tc("close")}
         onClick={onClose}
       />
       <div
@@ -62,15 +65,15 @@ export function AuthModal({
         <div className="relative p-6 sm:p-8">
           <div className="mb-6 flex items-start justify-between gap-4">
             <div>
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-white/40">AvenirLux</p>
+              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.2em] text-white/40">{t("eyebrow")}</p>
               <h2 id="auth-modal-title" className="font-display mt-2 text-2xl font-medium tracking-[-0.03em] text-white sm:text-[1.65rem]">
-                {mode === "signin" ? "Welcome back" : "Create your account"}
+                {mode === "signin" ? t("welcomeBack") : t("createAccount")}
               </h2>
               <p className="mt-2 text-sm leading-relaxed text-white/50">
-                {mode === "signin" ? "Your reservations and wishlist, privately held." : "Join quietly — curated stays await."}
+                {mode === "signin" ? t("signInSubtitle") : t("signUpSubtitle")}
               </p>
             </div>
-            <button type="button" onClick={onClose} className="auth-modal-close" aria-label="Close">
+            <button type="button" onClick={onClose} className="auth-modal-close" aria-label={tc("close")}>
               ×
             </button>
           </div>
@@ -80,14 +83,14 @@ export function AuthModal({
               className={`auth-modal-tab flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-300 ${mode === "signin" ? "auth-modal-tab--active" : ""}`}
               onClick={() => onModeChange("signin")}
             >
-              Sign in
+              {t("signInTab")}
             </button>
             <button
               type="button"
               className={`auth-modal-tab flex-1 rounded-full py-2.5 text-sm font-medium transition-all duration-300 ${mode === "signup" ? "auth-modal-tab--active" : ""}`}
               onClick={() => onModeChange("signup")}
             >
-              Sign up
+              {t("signUpTab")}
             </button>
           </div>
           <AuthPanelBody
