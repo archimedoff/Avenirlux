@@ -1,3 +1,4 @@
+import "server-only";
 import OpenAI from "openai";
 
 import { getOpenAiApiKey, getOpenAiTimeoutMs } from "@/lib/concierge/config";

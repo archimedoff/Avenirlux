@@ -1,13 +1,24 @@
 node_modules
 .next
-.env.local
 
+# Secrets — never commit
+.env
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+
+# Local JSON data (may contain password hashes)
 data/*.json
 !data/.gitkeep
 
 data/listings.json
-
 data/booking-requests.json
 
-
-.env
+# Keys & certs
+*.pem
+*.key
+*.p12
+credentials.json

@@ -1,3 +1,4 @@
+import "server-only";
 const DEFAULT_BASE = "https://api.liteapi.travel/v3.0";
 
 export function getLiteApiKey(): string {

@@ -11,12 +11,14 @@ export async function GET() {
   logOAuthDebug("GET /api/auth/social-catalog");
 
   const providers = getSocialProviderCatalog();
+  const body: { providers: ReturnType<typeof getSocialProviderCatalog>; debug?: ReturnType<typeof getOAuthDebugPayload> } = {
+    providers,
+  };
 
-  return NextResponse.json(
-    {
-      providers,
-      debug: getOAuthDebugPayload(),
-    },
-    { headers: { "Cache-Control": "no-store, max-age=0" } },
-  );
+  if (process.env.NODE_ENV === "development") {
+    const debug = getOAuthDebugPayload();
+    if (debug) body.debug = debug;
+  }
+
+  return NextResponse.json(body, { headers: { "Cache-Control": "no-store, max-age=0" } });
 }

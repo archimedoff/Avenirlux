@@ -1,3 +1,4 @@
+import "server-only";
 export function getOpenAiApiKey(): string | undefined {
   const key = process.env.OPENAI_API_KEY?.trim();
   return key || undefined;

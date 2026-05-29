@@ -1,3 +1,4 @@
+import "server-only";
 import { getLiteApiBaseUrl, getLiteApiKey } from "@/lib/liteapi/config";
 
 export class LiteApiError extends Error {
@@ -35,7 +36,11 @@ export async function liteApiRequest<T>(
 
   const text = await response.text();
   if (!response.ok) {
-    console.error("[LiteAPI]", response.status, path, text.slice(0, 500));
+    if (process.env.NODE_ENV === "development") {
+      console.error("[LiteAPI]", response.status, path, text.slice(0, 500));
+    } else {
+      console.error("[LiteAPI]", response.status, path);
+    }
     throw new LiteApiError(`LiteAPI request failed (${response.status})`, response.status, text);
   }
 
