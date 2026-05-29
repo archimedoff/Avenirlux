@@ -59,6 +59,10 @@ export const ru = {
     serviceError: "Не удалось связаться с консьержем. Попробуйте снова.",
     requestError: "Не удалось завершить запрос. Повторите через мгновение.",
     connectionError: "Связь прервалась. Попробуйте снова.",
+    retry: "Повторить",
+    composing: "Готовлю ответ…",
+    setupTitle: "Живой ИИ‑консьерж",
+    setupHint: "Добавьте OPENAI_API_KEY в .env.local (см. .env.example) и перезапустите сервер.",
   },
   host: {
     listingsTitle: "Ваши объекты",

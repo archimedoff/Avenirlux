@@ -22,7 +22,7 @@ type Props = {
   onClose?: () => void;
 };
 
-
+type RetryPayload = { text: string; mode: TripMode };
 
 export function ConciergeChat({ fullPage = false, onClose }: Props) {
   const { t } = useTranslations("concierge");
@@ -38,6 +38,8 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
   const [tripMode, setTripMode] = useState<TripMode>("general");
   const [isThinking, setIsThinking] = useState(false);
   const [providerLabel, setProviderLabel] = useState<string | null>(null);
+  const [retryPayload, setRetryPayload] = useState<RetryPayload | null>(null);
+  const [openAiConfigured, setOpenAiConfigured] = useState<boolean | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
 
@@ -49,7 +51,16 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
 
   useEffect(() => {
     scrollToEnd();
-  }, [messages, isThinking, scrollToEnd]);
+  }, [messages, isThinking, retryPayload, scrollToEnd]);
+
+  useEffect(() => {
+    fetch("/api/concierge/health")
+      .then((r) => r.json())
+      .then((data: { openai?: { configured?: boolean } }) => {
+        setOpenAiConfigured(Boolean(data.openai?.configured));
+      })
+      .catch(() => setOpenAiConfigured(null));
+  }, []);
 
   const sendMessage = useCallback(
     async (text: string, mode?: TripMode) => {
@@ -57,6 +68,8 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
       if (!trimmed || isThinking) return;
 
       const activeMode = mode ?? tripMode;
+      setRetryPayload(null);
+
       const userMsg: ConciergeMessage = {
         id: uid(),
         role: "user",
@@ -78,8 +91,10 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
       let assistantContent = "";
       let assistantHotels: ConciergeMessage["hotels"];
       let assistantMeta: ConciergeMessage["meta"];
+      let streamFailed = false;
 
       const upsertAssistant = () => {
+        if (streamFailed && !assistantContent) return;
         setMessages((prev) => {
           const rest = prev.filter((m) => m.id !== assistantId);
           return [
@@ -96,6 +111,10 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         });
       };
 
+      const removeAssistantPlaceholder = () => {
+        setMessages((prev) => prev.filter((m) => m.id !== assistantId));
+      };
+
       try {
         const res = await fetch("/api/concierge/chat", {
           method: "POST",
@@ -106,23 +125,27 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
 
         if (res.status === 429) {
           const data = (await res.json().catch(() => ({}))) as { error?: string };
-          assistantContent =
-            data.error ?? t("rateLimit");
+          removeAssistantPlaceholder();
+          setRetryPayload({ text: trimmed, mode: activeMode });
+          assistantContent = data.error ?? t("rateLimit");
+          streamFailed = true;
           upsertAssistant();
           return;
         }
 
         if (!res.ok || !res.body) {
+          removeAssistantPlaceholder();
+          setRetryPayload({ text: trimmed, mode: activeMode });
           assistantContent = t("serviceError");
+          streamFailed = true;
           upsertAssistant();
           return;
         }
 
-        setIsThinking(false);
-
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
+        let receivedToken = false;
 
         while (true) {
           const { done, value } = await reader.read();
@@ -144,6 +167,10 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
             }
 
             if (event.type === "token") {
+              if (!receivedToken) {
+                receivedToken = true;
+                setIsThinking(false);
+              }
               assistantContent += event.text;
               upsertAssistant();
             } else if (event.type === "meta") {
@@ -153,16 +180,30 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
             } else if (event.type === "hotels") {
               assistantHotels = event.hotels;
               upsertAssistant();
+            } else if (event.type === "failure" && event.retryable) {
+              removeAssistantPlaceholder();
+              setRetryPayload({ text: trimmed, mode: activeMode });
+              streamFailed = true;
             } else if (event.type === "error") {
-              assistantContent =
-                t("requestError");
+              removeAssistantPlaceholder();
+              setRetryPayload({ text: trimmed, mode: activeMode });
+              assistantContent = t("requestError");
+              streamFailed = true;
               upsertAssistant();
             }
           }
         }
+
+        if (!receivedToken && !streamFailed && !assistantContent) {
+          removeAssistantPlaceholder();
+          setRetryPayload({ text: trimmed, mode: activeMode });
+        }
       } catch (err) {
         if ((err as Error).name === "AbortError") return;
+        removeAssistantPlaceholder();
+        setRetryPayload({ text: trimmed, mode: activeMode });
         assistantContent = t("connectionError");
+        streamFailed = true;
         upsertAssistant();
       } finally {
         setIsThinking(false);
@@ -223,7 +264,14 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
       </div>
 
       <div ref={scrollRef} className="concierge-chat__messages">
-        {messages.length === 0 && !isThinking ? (
+        {openAiConfigured === false && messages.length === 0 && !isThinking ? (
+          <div className="concierge-setup-hint page-enter" role="status">
+            <p className="font-medium text-[var(--luxury-ink)]">{t("setupTitle")}</p>
+            <p className="mt-1 text-sm text-[var(--foreground-muted)]">{t("setupHint")}</p>
+          </div>
+        ) : null}
+
+        {messages.length === 0 && !isThinking && openAiConfigured !== false ? (
           <div className="concierge-chat__welcome page-enter">
             <p className="font-display text-xl text-[var(--luxury-ink)]">{t("welcomeTitle")}</p>
             <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
@@ -247,8 +295,27 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
           </div>
         ))}
 
+        {retryPayload ? (
+          <div className="concierge-error-banner page-enter" role="alert">
+            <p className="text-sm text-[var(--foreground-muted)]">{t("serviceError")}</p>
+            <button
+              type="button"
+              className="btn-secondary mt-3 text-sm"
+              disabled={busy}
+              onClick={() => {
+                const payload = retryPayload;
+                setRetryPayload(null);
+                void sendMessage(payload.text, payload.mode);
+              }}
+            >
+              {t("retry")}
+            </button>
+          </div>
+        ) : null}
+
         {isThinking ? (
           <div className="concierge-bubble concierge-bubble--assistant">
+            <p className="sr-only">{t("composing")}</p>
             <TypingIndicator />
           </div>
         ) : null}
@@ -263,9 +330,10 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
           className="concierge-chat__input"
           disabled={busy}
           aria-label={t("inputAria")}
+          aria-busy={busy}
         />
         <button type="submit" className="btn-primary concierge-chat__send" disabled={busy || !input.trim()}>
-          {tc("send")}
+          {busy ? "…" : tc("send")}
         </button>
       </form>
     </div>

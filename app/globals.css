@@ -908,6 +908,22 @@ html {
   border-color: var(--border-strong);
 }
 
+.concierge-setup-hint {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.25rem;
+  background: var(--surface-muted);
+  margin-bottom: 1rem;
+}
+
+.concierge-error-banner {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: 1rem 1.25rem;
+  background: var(--surface);
+  text-align: center;
+}
+
 .skip-link {
   position: absolute;
   left: -9999px;

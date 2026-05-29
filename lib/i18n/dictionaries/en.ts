@@ -59,6 +59,10 @@ export const en = {
     serviceError: "I could not reach the concierge service. Please try again.",
     requestError: "I could not complete that request just now. Please try again in a moment.",
     connectionError: "Something interrupted our connection. Please try again.",
+    retry: "Try again",
+    composing: "Composing your counsel…",
+    setupTitle: "Live AI counsel",
+    setupHint: "Add OPENAI_API_KEY to .env.local (see .env.example), then restart the dev server.",
   },
   host: {
     listingsTitle: "Your listings",

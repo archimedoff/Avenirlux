@@ -123,19 +123,15 @@ export async function* runConciergeChat(
     const code = error instanceof ConciergeProviderError ? error.code : "unknown";
     markOpenAiFailure(code);
 
-    const fallbackReason: ConciergeFallbackReason =
-      code === "quota_exceeded" || code === "rate_limited" ? "quota" : "unavailable";
-
     const cachedAfterFailure = getCachedConciergeResponse(cacheKey);
     if (cachedAfterFailure) {
-      yield emitMeta(intent, "cache", "cached", fallbackReason);
+      yield emitMeta(intent, "cache", "cached");
       yield* replayCachedText(cachedAfterFailure);
       yield { type: "done" };
       return;
     }
 
-    yield emitMeta(intent, "mock", "curated", fallbackReason);
-    yield* streamMock({ ...context, fallback: { reason: fallbackReason } });
+    yield { type: "failure", retryable: true };
     yield { type: "done" };
   }
 }

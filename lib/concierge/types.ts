@@ -31,4 +31,5 @@ export type ConciergeStreamEvent =
   | { type: "meta"; mode: TripMode; city?: string; provider: string; aiStatus: ConciergeAiStatus; notice?: string }
   | { type: "hotels"; hotels: ConciergeHotelPick[] }
   | { type: "done" }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "failure"; retryable: boolean };

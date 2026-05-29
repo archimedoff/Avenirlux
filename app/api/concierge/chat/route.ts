@@ -5,6 +5,8 @@ import type { ConciergeChatRequest, ConciergeStreamEvent, TripMode } from "@/lib
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
+const ROUTE_TIMEOUT_MS = 58_000;
+
 const VALID_MODES = new Set<TripMode>(["general", "romantic", "family", "business"]);
 
 function clientKey(request: Request): string {
@@ -64,20 +66,18 @@ export async function POST(request: Request) {
   const stream = new ReadableStream({
     async start(controller) {
       const encoder = new TextEncoder();
+      const routeAbort = AbortSignal.timeout(ROUTE_TIMEOUT_MS);
       try {
-        for await (const event of runConciergeChat({ message, history, mode })) {
-          controller.enqueue(encoder.encode(sseLine(event)));
-          if (event.type === "error") break;
-        }
+        const chatPromise = (async () => {
+          for await (const event of runConciergeChat({ message, history, mode })) {
+            if (routeAbort.aborted) break;
+            controller.enqueue(encoder.encode(sseLine(event)));
+            if (event.type === "error" || event.type === "failure") break;
+          }
+        })();
+        await chatPromise;
       } catch {
-        controller.enqueue(
-          encoder.encode(
-            sseLine({
-              type: "token",
-              text: "A brief pause on our side — allow me a moment to compose your guidance.",
-            }),
-          ),
-        );
+        controller.enqueue(encoder.encode(sseLine({ type: "failure", retryable: true })));
         controller.enqueue(encoder.encode(sseLine({ type: "done" })));
       } finally {
         controller.close();

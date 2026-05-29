@@ -8,7 +8,14 @@ export function isOpenAiConfigured(): boolean {
 }
 
 export function getOpenAiModel(): string {
-  return process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
+  return process.env.OPENAI_MODEL?.trim() || "gpt-4.1-mini";
+}
+
+/** Hard cap for a single concierge Responses API call (ms). */
+export function getOpenAiTimeoutMs(): number {
+  const raw = process.env.OPENAI_TIMEOUT_MS;
+  const n = raw ? Number.parseInt(raw, 10) : 55_000;
+  return Number.isFinite(n) && n >= 5_000 ? Math.min(n, 120_000) : 55_000;
 }
 
 export function getConciergeRateLimitMax(): number {
