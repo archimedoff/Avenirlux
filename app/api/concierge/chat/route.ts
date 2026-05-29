@@ -69,11 +69,16 @@ export async function POST(request: Request) {
           controller.enqueue(encoder.encode(sseLine(event)));
           if (event.type === "error") break;
         }
-      } catch (error) {
-        const msg = error instanceof Error ? error.message : "Stream failed";
+      } catch {
         controller.enqueue(
-          encoder.encode(sseLine({ type: "error", message: msg })),
+          encoder.encode(
+            sseLine({
+              type: "token",
+              text: "A brief pause on our side — allow me a moment to compose your guidance.",
+            }),
+          ),
         );
+        controller.enqueue(encoder.encode(sseLine({ type: "done" })));
       } finally {
         controller.close();
       }

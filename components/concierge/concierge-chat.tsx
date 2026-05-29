@@ -144,13 +144,14 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
               upsertAssistant();
             } else if (event.type === "meta") {
               assistantMeta = { mode: event.mode, city: event.city };
-              setProviderLabel(event.provider === "openai" ? "Live counsel" : "Curated guidance");
+              setProviderLabel(event.aiStatus === "live" ? "Live counsel" : null);
               upsertAssistant();
             } else if (event.type === "hotels") {
               assistantHotels = event.hotels;
               upsertAssistant();
             } else if (event.type === "error") {
-              assistantContent = event.message;
+              assistantContent =
+                "I could not complete that request just now. Please try again in a moment.";
               upsertAssistant();
             }
           }

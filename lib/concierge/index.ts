@@ -1,7 +1,8 @@
 /**
  * AvenirLux Concierge — engine, providers, types.
  */
-export { runConciergeChat } from "@/lib/concierge/engine";
+export { getConciergeRuntimeHealth, runConciergeChat } from "@/lib/concierge/engine";
+export { getOpenAiHealth, isOpenAiHealthy } from "@/lib/concierge/health";
 export { resolveConciergeProvider } from "@/lib/concierge/providers";
 export { getMockConciergeReply } from "@/lib/concierge/mock-responses";
 export { SUGGESTED_PROMPTS } from "@/lib/concierge/suggested-prompts";

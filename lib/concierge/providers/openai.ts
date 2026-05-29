@@ -1,5 +1,6 @@
 import { getOpenAiApiKey, getOpenAiModel } from "@/lib/concierge/config";
 import { buildConciergeSystemPrompt } from "@/lib/concierge/content";
+import { classifyOpenAiHttpFailure, ConciergeProviderError } from "@/lib/concierge/errors";
 import type { ConciergeProvider, ConciergeProviderContext } from "@/lib/concierge/providers/types";
 
 const MAX_HISTORY = 20;
@@ -10,7 +11,7 @@ export const openAiConciergeProvider: ConciergeProvider = {
   async *streamReply(context: ConciergeProviderContext) {
     const apiKey = getOpenAiApiKey();
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not configured");
+      throw new ConciergeProviderError("auth", "OpenAI is not configured");
     }
 
     const system = buildConciergeSystemPrompt(context.intent, context.hotels);
@@ -19,32 +20,38 @@ export const openAiConciergeProvider: ConciergeProvider = {
       content: m.content,
     }));
 
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: getOpenAiModel(),
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 700,
-        messages: [
-          { role: "system", content: system },
-          ...history,
-          { role: "user", content: context.message },
-        ],
-      }),
-    });
+    let response: Response;
+    try {
+      response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: getOpenAiModel(),
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 700,
+          messages: [
+            { role: "system", content: system },
+            ...history,
+            { role: "user", content: context.message },
+          ],
+        }),
+      });
+    } catch {
+      throw new ConciergeProviderError("network");
+    }
 
     if (!response.ok) {
       const errText = await response.text().catch(() => "");
-      throw new Error(`OpenAI request failed (${response.status}): ${errText.slice(0, 200)}`);
+      const code = classifyOpenAiHttpFailure(response.status, errText);
+      throw new ConciergeProviderError(code);
     }
 
     if (!response.body) {
-      throw new Error("OpenAI returned an empty stream");
+      throw new ConciergeProviderError("server");
     }
 
     const reader = response.body.getReader();
