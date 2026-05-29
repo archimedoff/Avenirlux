@@ -1,12 +1,22 @@
 # AvenirLux Concierge
 
-## Phase 1 (current)
+## Architecture
 
-- UI: floating button, modal, `/concierge` page
-- Mock replies: `mock-responses.ts`
-- No API route, no streaming, no OpenAI
+- **UI:** `components/concierge/` — floating button, modal, `/concierge` page
+- **API:** `POST /api/concierge/chat` — SSE stream (`token`, `meta`, `hotels`, `done`, `error`)
+- **Engine:** `lib/concierge/engine.ts` — intent, LiteAPI hotels, provider routing
+- **Providers:** `lib/concierge/providers/` — `openai` when `OPENAI_API_KEY` is set, `mock` fallback
+- **Session memory:** client sends `history` on each request (current session)
 
-## Phase 2 (planned)
+## Environment
 
-- Provider interface + OpenAI + `/api/concierge/chat`
-- LiteAPI hotel cards in replies
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | Live OpenAI streaming |
+| `OPENAI_MODEL` | Default `gpt-4o-mini` |
+| `LITE_API_KEY` | Live hotel cards in replies |
+| `CONCIERGE_RATE_LIMIT_PER_MINUTE` | Per-IP limit (default 30/min) |
+
+## Multi-model (future)
+
+Add a `ConciergeProvider` in `providers/` and register it in `providers/index.ts`.

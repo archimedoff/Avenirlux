@@ -1497,6 +1497,11 @@ html {
   font-size: 0.8125rem;
   color: var(--foreground-muted);
 }
+.concierge-chat__provider {
+  opacity: 0.75;
+  font-weight: 500;
+}
+
 
 .concierge-chat__header-actions {
   display: flex;

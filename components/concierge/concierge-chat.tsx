@@ -3,12 +3,14 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { ConciergeHotelCards } from "@/components/concierge/concierge-hotel-cards";
 import { ConciergeSuggestedPrompts } from "@/components/concierge/concierge-suggested-prompts";
 import { TypingIndicator } from "@/components/concierge/typing-indicator";
-import { getMockConciergeReply } from "@/lib/concierge/mock-responses";
-import type { ConciergeMessage, TripMode } from "@/lib/concierge/types";
-
-const THINKING_MS = 900;
+import type {
+  ConciergeMessage,
+  ConciergeStreamEvent,
+  TripMode,
+} from "@/lib/concierge/types";
 
 function uid() {
   return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -31,7 +33,9 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
   const [input, setInput] = useState("");
   const [tripMode, setTripMode] = useState<TripMode>("general");
   const [isThinking, setIsThinking] = useState(false);
+  const [providerLabel, setProviderLabel] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   const scrollToEnd = useCallback(() => {
     requestAnimationFrame(() => {
@@ -56,23 +60,111 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         createdAt: Date.now(),
       };
 
+      const history = messages.map((m) => ({ role: m.role, content: m.content }));
+
       setMessages((prev) => [...prev, userMsg]);
       setInput("");
       setIsThinking(true);
 
-      await new Promise((resolve) => setTimeout(resolve, THINKING_MS));
+      abortRef.current?.abort();
+      const abort = new AbortController();
+      abortRef.current = abort;
 
-      const assistantMsg: ConciergeMessage = {
-        id: uid(),
-        role: "assistant",
-        content: getMockConciergeReply(trimmed, activeMode),
-        createdAt: Date.now(),
+      const assistantId = uid();
+      let assistantContent = "";
+      let assistantHotels: ConciergeMessage["hotels"];
+      let assistantMeta: ConciergeMessage["meta"];
+
+      const upsertAssistant = () => {
+        setMessages((prev) => {
+          const rest = prev.filter((m) => m.id !== assistantId);
+          return [
+            ...rest,
+            {
+              id: assistantId,
+              role: "assistant" as const,
+              content: assistantContent,
+              createdAt: Date.now(),
+              hotels: assistantHotels,
+              meta: assistantMeta,
+            },
+          ];
+        });
       };
 
-      setMessages((prev) => [...prev, assistantMsg]);
-      setIsThinking(false);
+      try {
+        const res = await fetch("/api/concierge/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: trimmed, mode: activeMode, history }),
+          signal: abort.signal,
+        });
+
+        if (res.status === 429) {
+          const data = (await res.json().catch(() => ({}))) as { error?: string };
+          assistantContent =
+            data.error ?? "Our concierge is attending to many guests. Please try again shortly.";
+          upsertAssistant();
+          return;
+        }
+
+        if (!res.ok || !res.body) {
+          assistantContent = "I could not reach the concierge service. Please try again.";
+          upsertAssistant();
+          return;
+        }
+
+        setIsThinking(false);
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const parts = buffer.split("\n\n");
+          buffer = parts.pop() ?? "";
+
+          for (const part of parts) {
+            const line = part.trim();
+            if (!line.startsWith("data:")) continue;
+
+            let event: ConciergeStreamEvent;
+            try {
+              event = JSON.parse(line.slice(5).trim()) as ConciergeStreamEvent;
+            } catch {
+              continue;
+            }
+
+            if (event.type === "token") {
+              assistantContent += event.text;
+              upsertAssistant();
+            } else if (event.type === "meta") {
+              assistantMeta = { mode: event.mode, city: event.city };
+              setProviderLabel(event.provider === "openai" ? "Live counsel" : "Curated guidance");
+              upsertAssistant();
+            } else if (event.type === "hotels") {
+              assistantHotels = event.hotels;
+              upsertAssistant();
+            } else if (event.type === "error") {
+              assistantContent = event.message;
+              upsertAssistant();
+            }
+          }
+        }
+      } catch (err) {
+        if ((err as Error).name === "AbortError") return;
+        assistantContent = "Something interrupted our connection. Please try again.";
+        upsertAssistant();
+      } finally {
+        setIsThinking(false);
+        abortRef.current = null;
+      }
     },
-    [isThinking, tripMode],
+    [isThinking, tripMode, messages],
   );
 
   const onSubmit = (e: React.FormEvent) => {
@@ -88,7 +180,12 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
         <div>
           <p className="concierge-chat__eyebrow">AvenirLux</p>
           <h2 className="concierge-chat__title font-display">AI Concierge</h2>
-          <p className="concierge-chat__subtitle">Your private luxury travel counsel</p>
+          <p className="concierge-chat__subtitle">
+            Your private luxury travel counsel
+            {providerLabel ? (
+              <span className="concierge-chat__provider"> · {providerLabel}</span>
+            ) : null}
+          </p>
         </div>
         <div className="concierge-chat__header-actions">
           {fullPage ? (
@@ -128,7 +225,7 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
               Destinations, residences, itineraries, and hidden gems — composed with quiet precision.
             </p>
             <p className="mt-3 text-[0.6875rem] font-medium uppercase tracking-[0.12em] text-[var(--foreground-subtle)]">
-              Preview · sample responses
+              Live residences when you ask for a city
             </p>
             <ConciergeSuggestedPrompts onSelect={(msg, mode) => void sendMessage(msg, mode)} disabled={busy} />
           </div>
@@ -136,7 +233,12 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
 
         {messages.map((msg) => (
           <div key={msg.id} className={`concierge-bubble concierge-bubble--${msg.role} page-enter`}>
-            <p className="concierge-bubble__content whitespace-pre-wrap">{msg.content}</p>
+            {msg.content ? (
+              <p className="concierge-bubble__content whitespace-pre-wrap">{msg.content}</p>
+            ) : null}
+            {msg.role === "assistant" && msg.hotels?.length ? (
+              <ConciergeHotelCards hotels={msg.hotels} />
+            ) : null}
           </div>
         ))}
 
