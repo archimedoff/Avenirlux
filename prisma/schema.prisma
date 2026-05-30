@@ -33,10 +33,20 @@ enum PropertyType {
 
 enum BookingRecordStatus {
   pending
+  pending_payment
   confirmed
   declined
   upcoming
   completed
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  processing
+  succeeded
+  failed
+  refunded
   cancelled
 }
 
@@ -181,25 +191,76 @@ model Booking {
 
   guestName  String @map("guest_name")
   guestEmail String @map("guest_email")
+  guestPhone String? @map("guest_phone")
   checkIn    String @map("check_in")
   checkOut   String @map("check_out")
   guests     Int    @default(2)
   roomName   String @default("") @map("room_name")
+  roomId     String? @map("room_id")
   total      Float  @default(0)
+
+  specialRequests String? @map("special_requests")
+  arrivalTime     String? @map("arrival_time")
+  conciergeNotes  String? @map("concierge_notes")
+  upsellsJson     Json?   @map("upsells_json")
+  providerId      String? @map("provider_id")
+  pricingJson     Json?   @map("pricing_json")
 
   confirmationRef String? @map("confirmation_ref")
   externalHotelId String? @map("external_hotel_id")
   hotelName       String? @map("hotel_name")
   hotelImage      String? @map("hotel_image")
   city            String?
+  country         String?
+
+  cancelledAt        DateTime? @map("cancelled_at")
+  cancellationReason String?   @map("cancellation_reason")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+
+  payment Payment?
+
+  @@index([confirmationRef])
 
   @@index([hostId])
   @@index([propertyId])
   @@index([guestUserId])
   @@map("bookings")
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  bookingId             String        @unique @map("booking_id")
+  booking               Booking       @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  stripePaymentIntentId String?       @unique @map("stripe_payment_intent_id")
+  amountCents           Int           @map("amount_cents")
+  currency              String        @default("usd")
+  status                PaymentStatus @default(pending)
+  paymentMethod         String?       @map("payment_method")
+  metadataJson          Json?         @map("metadata_json")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  @@index([stripePaymentIntentId])
+  @@map("payments")
+}
+
+model EmailNotification {
+  id        String   @id @default(cuid())
+  bookingId String?  @map("booking_id")
+  toEmail   String   @map("to_email")
+  template  String
+  subject   String
+  status    String   @default("queued")
+  payload   Json?
+  sentAt    DateTime? @map("sent_at")
+  error     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([bookingId])
+  @@index([status])
+  @@map("email_notifications")
 }
 
 model Conversation {

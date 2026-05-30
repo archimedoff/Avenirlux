@@ -25,6 +25,8 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "@stripe/react-stripe-js": "^6.5.0",
+    "@stripe/stripe-js": "^9.7.0",
     "@supabase/supabase-js": "^2.106.2",
     "bcryptjs": "^3.0.3",
     "next": "^16.2.4",
@@ -32,7 +34,8 @@
     "openai": "^6.39.1",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "stripe": "^22.2.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.2.4",
