@@ -80,7 +80,7 @@ export default function HomePage() {
           </div>
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
             {featuredCities.map((city) => (
-              <Link key={city.name} href={`/hotels?city=${encodeURIComponent(city.name)}`} className="destination-card group">
+              <Link key={city.name} href={`/destinations/${encodeURIComponent(city.name.toLowerCase())}`} className="destination-card group">
                 <div className="destination-card__media relative">
                   <Image
                     src={city.image}

@@ -8,6 +8,7 @@ import { FavoriteButton } from "@/components/favorite-button";
 import { HotelBookingSidebar } from "@/components/hotel-booking-sidebar";
 import { HotelCard } from "@/components/hotel-card";
 import { HotelTrackView } from "@/components/hotel-track-view";
+import { HotelJsonLd } from "@/components/seo/hotel-json-ld";
 import { buildStayQuery } from "@/lib/booking-utils";
 import { fetchHotelById, fetchSimilarHotels } from "@/lib/hotels-data";
 
@@ -98,7 +99,9 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
   const experienceNarrative = hotel.description;
 
   return (
-    <main className="page-enter space-y-10 pb-28 sm:space-y-12 lg:pb-10">
+    <>
+      <HotelJsonLd hotel={hotel} checkIn={query.checkIn} checkOut={query.checkOut} />
+      <main className="page-enter space-y-10 pb-28 sm:space-y-12 lg:pb-10">
       <HotelTrackView id={hotel.id} name={hotel.name} image={hotel.image} city={hotel.city} />
       <section className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-muted)] shadow-[var(--shadow-xl)]">
         <div className="absolute inset-x-0 top-0 z-20 p-4 sm:p-6">
@@ -292,5 +295,6 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
         </section>
       )}
     </main>
+    </>
   );
 }
