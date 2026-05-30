@@ -14,8 +14,11 @@ function toRequest(row: {
   roomName: string;
   total: number;
   status: string;
+  kind: string;
+  confirmationRef: string | null;
   createdAt: Date;
 }): BookingRequestRecord {
+  const status = row.status === "upcoming" || row.status === "completed" ? "confirmed" : (row.status as BookingRequestRecord["status"]);
   return {
     id: row.id,
     listingId: row.propertyId ?? "",
@@ -27,7 +30,9 @@ function toRequest(row: {
     guests: row.guests,
     roomName: row.roomName,
     total: row.total,
-    status: row.status as BookingRequestRecord["status"],
+    status,
+    kind: row.kind === "guest_booking" ? "guest_booking" : "host_request",
+    confirmationRef: row.confirmationRef ?? undefined,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -35,7 +40,13 @@ function toRequest(row: {
 export class PrismaBookingRequestsRepository {
   async listByOwner(ownerId: string) {
     const rows = await prisma.booking.findMany({
-      where: { hostId: ownerId, kind: "host_request" },
+      where: {
+        hostId: ownerId,
+        OR: [
+          { kind: "host_request" },
+          { kind: "guest_booking", status: { in: ["upcoming", "completed", "confirmed"] } },
+        ],
+      },
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toRequest);

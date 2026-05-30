@@ -9,6 +9,8 @@ export interface BookingRepository {
     reservation: ReservationDraft,
     confirmationRef: string,
   ): Promise<UserBookingRecord>;
+  getById(userId: string, bookingId: string): Promise<UserBookingRecord | null>;
+  cancel(userId: string, bookingId: string, reason?: string): Promise<UserBookingRecord>;
 }
 
 export const bookingRepository: BookingRepository = new PrismaBookingRepository();

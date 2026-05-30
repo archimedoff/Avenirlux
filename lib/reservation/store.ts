@@ -48,6 +48,8 @@ export function buildDraftFromStay(params: {
   roomId: string;
   roomName: string;
   pricing: PricingBreakdown;
+  providerId?: string;
+  propertyId?: string;
 }): ReservationDraft {
   return {
     ...params,

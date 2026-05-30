@@ -46,7 +46,9 @@ export type BookingRequestRecord = {
   guests: number;
   roomName: string;
   total: number;
-  status: "pending" | "confirmed" | "declined";
+  status: "pending" | "confirmed" | "declined" | "upcoming" | "cancelled";
+  kind?: "host_request" | "guest_booking";
+  confirmationRef?: string;
   createdAt: string;
 };
 
@@ -67,7 +69,6 @@ export type UserRecord = {
   role: UserRole;
   id: string;
   email: string;
-  /** Empty when the account is OAuth-only (no email password set). */
   passwordHash: string;
   firstName: string;
   lastName: string;
@@ -77,7 +78,7 @@ export type UserRecord = {
   oauthAccounts?: Partial<Record<OAuthProviderId, OAuthAccountLink>>;
 };
 
-export type BookingStatus = "upcoming" | "completed" | "cancelled";
+export type BookingStatus = "upcoming" | "completed" | "cancelled" | "pending_payment";
 
 export type UserBookingRecord = {
   id: string;
@@ -94,6 +95,15 @@ export type UserBookingRecord = {
   roomName: string;
   total: number;
   createdAt: string;
+  paymentStatus?: string | null;
+};
+
+export type BookingDetailRecord = UserBookingRecord & {
+  specialRequests?: string | null;
+  arrivalTime?: string | null;
+  conciergeNotes?: string | null;
+  cancelledAt?: string | null;
+  cancellationReason?: string | null;
 };
 
 export type PublicUser = Omit<UserRecord, "passwordHash">;
