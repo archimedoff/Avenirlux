@@ -3,13 +3,15 @@ import "server-only";
 import { generateConfirmationRef } from "@/lib/booking-utils";
 import { queueBookingEmail } from "@/lib/booking/email-service";
 import { getPlatformHostId } from "@/lib/booking/platform-host";
+import { ReservationValidationError, validateAndPriceReservation } from "@/lib/booking/validate-reservation";
 import { prisma } from "@/lib/db/prisma";
 import type { UserBookingRecord } from "@/lib/db/types";
+import { logger } from "@/lib/logger";
 import { pricingToCents } from "@/lib/reservation/pricing";
 import type { ReservationDraft } from "@/lib/reservation/types";
 import { resolveSelectedUpsells } from "@/lib/reservation/upsells";
-import { createPaymentIntent, retrievePaymentIntent, cancelPaymentIntent } from "@/lib/stripe/server";
-import { getStripePublishableKey, isStripeConfigured } from "@/lib/stripe/config";
+import { allowMockPayments, getStripePublishableKey } from "@/lib/stripe/config";
+import { cancelPaymentIntent, createPaymentIntent, createRefund, retrievePaymentIntent } from "@/lib/stripe/server";
 
 function deriveBookingStatus(checkOut: string): "upcoming" | "completed" {
   return new Date(checkOut) < new Date() ? "completed" : "upcoming";
@@ -65,17 +67,51 @@ async function resolveHostId(reservation: ReservationDraft): Promise<{ hostId: s
   return { hostId: await getPlatformHostId(), propertyId: reservation.propertyId ?? null };
 }
 
-export async function createCheckoutIntent(
-  reservation: ReservationDraft,
-  guestUserId?: string | null,
+async function getHostEmail(hostId: string): Promise<string | undefined> {
+  const host = await prisma.user.findUnique({ where: { id: hostId }, select: { email: true } });
+  return host?.email ?? undefined;
+}
+
+async function notifyBookingConfirmed(
+  bookingId: string,
+  booking: {
+    confirmationRef: string | null;
+    guestName: string;
+    guestEmail: string;
+    hotelName: string | null;
+    checkIn: string;
+    checkOut: string;
+    total: number;
+    city: string | null;
+    hostId: string;
+  },
 ) {
-  if (!reservation.guest) throw new Error("Guest details required");
+  const payload = {
+    confirmationRef: booking.confirmationRef ?? "",
+    guestName: booking.guestName,
+    guestEmail: booking.guestEmail,
+    hotelName: booking.hotelName ?? "Your stay",
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    total: booking.total,
+    city: booking.city ?? undefined,
+  };
+  await queueBookingEmail("booking_confirmation", payload, bookingId);
+  const hostEmail = await getHostEmail(booking.hostId);
+  if (hostEmail) await queueBookingEmail("host_new_booking", { ...payload, hostEmail }, bookingId);
+}
+
+export async function createCheckoutIntent(reservation: ReservationDraft, guestUserId?: string | null) {
+  const { reservation: validated, pricing } = await validateAndPriceReservation(reservation);
+  reservation = validated;
+  if (!reservation.guest) throw new ReservationValidationError("GUEST_REQUIRED", "Guest details required");
 
   const confirmationRef = reservation.confirmationRef ?? generateConfirmationRef();
   const { hostId, propertyId } = await resolveHostId(reservation);
   const upsells = resolveSelectedUpsells(reservation.selectedUpsellIds ?? []);
-  const amountCents = pricingToCents(reservation.pricing.total);
+  const amountCents = pricingToCents(pricing.total);
   const guestName = `${reservation.guest.firstName} ${reservation.guest.lastName}`.trim();
+  const mockMode = allowMockPayments();
 
   const booking = await prisma.booking.create({
     data: {
@@ -92,153 +128,102 @@ export async function createCheckoutIntent(
       guests: reservation.guests,
       roomName: reservation.roomName,
       roomId: reservation.roomId,
-      total: reservation.pricing.total,
+      total: pricing.total,
       specialRequests: reservation.guest.specialRequests ?? null,
       arrivalTime: reservation.guest.arrivalTime ?? null,
       conciergeNotes: reservation.guest.conciergeNotes ?? null,
       upsellsJson: upsells as unknown as object,
       providerId: reservation.providerId ?? null,
-      pricingJson: reservation.pricing as unknown as object,
+      pricingJson: pricing as unknown as object,
       confirmationRef,
       externalHotelId: reservation.hotelId,
       hotelName: reservation.hotelName,
       hotelImage: reservation.hotelImage,
       city: reservation.city,
       country: reservation.country ?? null,
-      payment: {
-        create: {
-          amountCents,
-          currency: "usd",
-          status: "pending",
-        },
-      },
+      payment: { create: { amountCents, currency: "usd", status: "pending" } },
     },
     include: { payment: true },
   });
 
-  const mockMode = !isStripeConfigured();
   let clientSecret: string | null = null;
   let paymentIntentId: string | null = null;
-
   if (!mockMode) {
     const intent = await createPaymentIntent({
       amountCents,
-      metadata: {
-        bookingId: booking.id,
-        confirmationRef,
-        hotelId: reservation.hotelId,
-      },
+      metadata: { bookingId: booking.id, confirmationRef, hotelId: reservation.hotelId },
       receiptEmail: reservation.guest.email,
       description: `${reservation.hotelName} · ${confirmationRef}`,
     });
     if (!intent) throw new Error("Failed to create payment intent");
     clientSecret = intent.client_secret;
     paymentIntentId = intent.id;
-    await prisma.payment.update({
-      where: { bookingId: booking.id },
-      data: { stripePaymentIntentId: intent.id, status: "processing" },
-    });
+    await prisma.payment.update({ where: { bookingId: booking.id }, data: { stripePaymentIntentId: intent.id, status: "processing" } });
   }
 
-  return {
-    clientSecret,
-    bookingId: booking.id,
-    confirmationRef,
-    paymentIntentId,
-    mockMode,
-    publishableKey: getStripePublishableKey(),
-  };
+  return { clientSecret, bookingId: booking.id, confirmationRef, paymentIntentId, mockMode, publishableKey: getStripePublishableKey() };
 }
 
 export async function confirmCheckoutPayment(bookingId: string, paymentIntentId?: string) {
   const booking = await prisma.booking.findUnique({ where: { id: bookingId }, include: { payment: true } });
   if (!booking) throw new Error("Booking not found");
-  if (booking.status === "upcoming" || booking.status === "confirmed") {
+  if (booking.status === "upcoming" || booking.status === "confirmed" || booking.status === "completed") {
     return { success: true, confirmationRef: booking.confirmationRef ?? "", bookingId, status: booking.status };
   }
 
-  const mockMode = !isStripeConfigured();
+  const mockMode = allowMockPayments();
   if (!mockMode) {
     const intentId = paymentIntentId ?? booking.payment?.stripePaymentIntentId;
     if (!intentId) throw new Error("Missing payment intent");
     const intent = await retrievePaymentIntent(intentId);
-    if (!intent || intent.status !== "succeeded") {
+    if (!intent || intent.metadata?.bookingId !== bookingId) {
+      logger.warn("checkout.confirm.intent_mismatch", { bookingId, intentId });
+      throw new Error("Invalid payment intent");
+    }
+    if (intent.status !== "succeeded") {
       await prisma.payment.update({ where: { bookingId }, data: { status: "failed" } });
-      await prisma.booking.update({ where: { id: bookingId }, data: { status: "pending_payment" } });
       return { success: false, confirmationRef: booking.confirmationRef ?? "", bookingId, status: "failed", error: "Payment not completed" };
     }
-    await prisma.payment.update({
-      where: { bookingId },
-      data: { status: "succeeded", paymentMethod: intent.payment_method_types?.[0] ?? "card" },
-    });
+    await prisma.payment.update({ where: { bookingId }, data: { status: "succeeded", paymentMethod: intent.payment_method_types?.[0] ?? "card" } });
   } else if (booking.payment) {
     await prisma.payment.update({ where: { bookingId }, data: { status: "succeeded", paymentMethod: "mock" } });
   }
 
   const nextStatus = deriveBookingStatus(booking.checkOut);
   await prisma.booking.update({ where: { id: bookingId }, data: { status: nextStatus } });
-
-  await queueBookingEmail(
-    "booking_confirmation",
-    {
-      confirmationRef: booking.confirmationRef ?? "",
-      guestName: booking.guestName,
-      guestEmail: booking.guestEmail,
-      hotelName: booking.hotelName ?? "Your stay",
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      total: booking.total,
-      city: booking.city ?? undefined,
-    },
-    bookingId,
-  );
-
+  await notifyBookingConfirmed(bookingId, booking);
   return { success: true, confirmationRef: booking.confirmationRef ?? "", bookingId, status: nextStatus };
 }
 
 export async function cancelGuestBooking(bookingId: string, userId: string, reason?: string) {
-  const booking = await prisma.booking.findFirst({
-    where: { id: bookingId, guestUserId: userId, kind: "guest_booking" },
-    include: { payment: true },
-  });
+  const booking = await prisma.booking.findFirst({ where: { id: bookingId, guestUserId: userId, kind: "guest_booking" }, include: { payment: true } });
   if (!booking) throw new Error("Booking not found");
   if (booking.status === "cancelled") return mapBookingRow(booking);
 
   if (booking.payment?.stripePaymentIntentId && booking.payment.status === "succeeded") {
-    // Future: Stripe refund API
+    const refund = await createRefund(booking.payment.stripePaymentIntentId, booking.payment.amountCents);
+    if (refund) await prisma.payment.update({ where: { bookingId }, data: { status: "refunded" } });
   } else if (booking.payment?.stripePaymentIntentId && booking.payment.status === "processing") {
     await cancelPaymentIntent(booking.payment.stripePaymentIntentId);
     await prisma.payment.update({ where: { bookingId }, data: { status: "cancelled" } });
   }
 
-  const updated = await prisma.booking.update({
-    where: { id: bookingId },
-    data: { status: "cancelled", cancelledAt: new Date(), cancellationReason: reason ?? null },
-  });
-
-  await queueBookingEmail(
-    "booking_cancelled",
-    {
-      confirmationRef: booking.confirmationRef ?? "",
-      guestName: booking.guestName,
-      guestEmail: booking.guestEmail,
-      hotelName: booking.hotelName ?? "Your stay",
-      checkIn: booking.checkIn,
-      checkOut: booking.checkOut,
-      total: booking.total,
-      city: booking.city ?? undefined,
-    },
-    bookingId,
-  );
-
+  const updated = await prisma.booking.update({ where: { id: bookingId }, data: { status: "cancelled", cancelledAt: new Date(), cancellationReason: reason ?? null } });
+  await queueBookingEmail("booking_cancelled", {
+    confirmationRef: booking.confirmationRef ?? "",
+    guestName: booking.guestName,
+    guestEmail: booking.guestEmail,
+    hotelName: booking.hotelName ?? "Your stay",
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    total: booking.total,
+    city: booking.city ?? undefined,
+  }, bookingId);
   return mapBookingRow(updated);
 }
 
 export async function getGuestBooking(bookingId: string, userId: string) {
-  const booking = await prisma.booking.findFirst({
-    where: { id: bookingId, guestUserId: userId, kind: "guest_booking" },
-    include: { payment: true },
-  });
+  const booking = await prisma.booking.findFirst({ where: { id: bookingId, guestUserId: userId, kind: "guest_booking" }, include: { payment: true } });
   if (!booking) return null;
   return {
     ...mapBookingRow(booking),
@@ -260,8 +245,8 @@ export async function handleStripeWebhookEvent(event: { type: string; data: { ob
   }
   if (event.type === "payment_intent.payment_failed") {
     const bookingId = event.data.object.metadata?.bookingId;
-    if (bookingId) {
-      await prisma.payment.updateMany({ where: { bookingId }, data: { status: "failed" } });
-    }
+    if (bookingId) await prisma.payment.updateMany({ where: { bookingId }, data: { status: "failed" } });
   }
 }
+
+export { ReservationValidationError };

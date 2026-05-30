@@ -50,3 +50,13 @@ export async function cancelPaymentIntent(intentId: string) {
   if (!stripe) return null;
   return stripe.paymentIntents.cancel(intentId);
 }
+
+
+export async function createRefund(paymentIntentId: string, amountCents?: number) {
+  const stripe = getStripe();
+  if (!stripe) return null;
+  return stripe.refunds.create({
+    payment_intent: paymentIntentId,
+    ...(amountCents ? { amount: amountCents } : {}),
+  });
+}
