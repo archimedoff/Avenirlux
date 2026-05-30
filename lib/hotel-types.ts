@@ -22,8 +22,11 @@ export type Room = {
 
 export type HotelTypeLabel = "Hotel" | "Resort" | "Villa" | "Boutique" | "Residence";
 
+export type HotelProviderId = "marketplace" | "liteapi" | "expedia";
+
 export type Hotel = {
   id: string;
+  providerId?: HotelProviderId;
   name: string;
   location: string;
   city: string;

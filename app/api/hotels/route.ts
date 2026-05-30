@@ -18,7 +18,12 @@ export async function GET(request: NextRequest) {
   });
 
   if (result.error && !result.hotels.length) {
-    return NextResponse.json({ hotels: [], hasMore: false, error: result.error }, { status: 502 });
+    const status =
+      result.errorCode === "rate_limit" ? 429 : result.errorCode === "timeout" ? 504 : 502;
+    return NextResponse.json(
+      { hotels: [], hasMore: false, error: result.error, errorCode: result.errorCode },
+      { status },
+    );
   }
 
   return NextResponse.json(result);

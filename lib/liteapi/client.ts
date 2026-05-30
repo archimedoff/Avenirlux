@@ -23,16 +23,31 @@ export async function liteApiRequest<T>(
     Object.entries(init.searchParams).forEach(([k, v]) => url.searchParams.set(k, v));
   }
 
-  const response = await fetch(url.toString(), {
-    ...init,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      "X-API-Key": getLiteApiKey(),
-      ...(init?.headers || {}),
-    },
-    cache: "no-store",
-  });
+  const timeoutMs = Number(process.env.LITE_API_TIMEOUT_MS || "25000") || 25000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  let response: Response;
+  try {
+    response = await fetch(url.toString(), {
+      ...init,
+      signal: init?.signal ?? controller.signal,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-API-Key": getLiteApiKey(),
+        ...(init?.headers || {}),
+      },
+      cache: "no-store",
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new LiteApiError("LiteAPI request timed out", 504, "");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 
   const text = await response.text();
   if (!response.ok) {

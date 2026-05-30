@@ -52,7 +52,7 @@ export default async function HotelsPage({ searchParams }: HotelsPageProps) {
   const limit = Number(params.limit || "24") || 24;
   const offset = Number(params.offset || "0") || 0;
 
-  const { hotels, hasMore, error } = await fetchHotels({
+  const { hotels, hasMore, error, errorCode } = await fetchHotels({
     city: params.city,
     checkIn: params.checkIn,
     checkOut: params.checkOut,
@@ -75,6 +75,7 @@ export default async function HotelsPage({ searchParams }: HotelsPageProps) {
       offset={offset}
       hasMore={hasMore}
       error={error}
+      errorCode={errorCode}
       initialFilters={buildInitialFiltersFromParams(params)}
     />
   );

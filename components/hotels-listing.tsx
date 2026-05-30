@@ -18,6 +18,8 @@ import {
   type HotelsFilterState,
 } from "@/lib/hotels-filter";
 import type { Hotel } from "@/lib/hotel-types";
+import type { HotelSearchErrorCode } from "@/lib/providers/hotels/types";
+import { getHotelSearchErrorTitle } from "@/lib/providers/hotels/messages";
 
 type HotelsListingProps = {
   hotels: Hotel[];
@@ -31,6 +33,7 @@ type HotelsListingProps = {
   offset?: number;
   hasMore?: boolean;
   error?: string;
+  errorCode?: HotelSearchErrorCode;
   initialFilters?: HotelsFilterState;
 };
 
@@ -46,6 +49,7 @@ export function HotelsListing({
   offset = 0,
   hasMore = false,
   error,
+  errorCode,
   initialFilters = {},
 }: HotelsListingProps) {
   const router = useRouter();
@@ -142,11 +146,21 @@ export function HotelsListing({
         </div>
       )}
 
-      {error ? (
-        <ErrorState title="We could not reach our hotel partners" message={error} />
+      {error && errorCode === "partial" && hotels.length > 0 ? (
+        <div
+          role="status"
+          className="page-enter mb-6 rounded-[var(--radius-lg)] border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-sm text-amber-950"
+        >
+          <p className="font-medium">{getHotelSearchErrorTitle(errorCode)}</p>
+          {error ? <p className="mt-1 text-amber-900/80">{error}</p> : null}
+        </div>
       ) : null}
 
-      {!error && (
+      {error && (errorCode !== "partial" || hotels.length === 0) ? (
+        <ErrorState title={getHotelSearchErrorTitle(errorCode)} message={error} />
+      ) : null}
+
+      {(!error || errorCode === "partial") && (
         <div className="hotels-layout">
           <div className="hotels-layout__toolbar">
             <button

@@ -1,5 +1,4 @@
 import { fetchHotels } from "@/lib/hotels-service";
-import { searchPublishedProperties } from "@/lib/properties/search";
 import type { ConciergeHotelPick } from "@/lib/concierge/types";
 import type { Hotel } from "@/lib/hotel-types";
 
@@ -17,16 +16,12 @@ function toPick(h: Hotel): ConciergeHotelPick {
   };
 }
 
+/** Live inventory: marketplace listings + LiteAPI (and future Expedia) via provider aggregator. */
 export async function fetchConciergeHotels(city?: string, limit = 4): Promise<ConciergeHotelPick[]> {
   if (!city?.trim()) return [];
 
-  const published = await searchPublishedProperties({ city: city.trim(), limit });
-  if (published.length) {
-    return published.map(toPick);
-  }
-
-  const { hotels, error } = await fetchHotels({ city: city.trim(), limit });
-  if (error || !hotels.length) return [];
+  const { hotels } = await fetchHotels({ city: city.trim(), limit });
+  if (!hotels.length) return [];
 
   return hotels.slice(0, limit).map(toPick);
 }
