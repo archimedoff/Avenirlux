@@ -116,10 +116,10 @@ export function HotelsListing({
     <div className="hotels-page pb-10 sm:pb-14">
       <header className="hotels-hero glass-card page-enter">
         <div className="hotels-hero__glow" aria-hidden />
-        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.18em] text-[var(--foreground-subtle)]">
+        <p className="eyebrow eyebrow-gold">
           Worldwide collection
         </p>
-        <h1 className="font-display mt-3 text-[clamp(2rem,5vw,3.25rem)] font-medium leading-[1.05] tracking-[-0.04em] text-[var(--luxury-ink)]">
+        <h1 className="font-display mt-4 text-[clamp(2rem,5vw,3.25rem)] font-light leading-[1.05] tracking-[-0.04em] text-[var(--foreground)]">
           {city ? `${city}, privately selected` : "Discover luxury stays"}
         </h1>
         <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-[var(--foreground-muted)]">
@@ -149,10 +149,10 @@ export function HotelsListing({
       {error && errorCode === "partial" && hotels.length > 0 ? (
         <div
           role="status"
-          className="page-enter mb-6 rounded-[var(--radius-lg)] border border-amber-200/80 bg-amber-50/90 px-4 py-3 text-sm text-amber-950"
+          className="page-enter mb-6 rounded-[var(--radius-lg)] border border-[rgba(201,169,98,0.3)] bg-[rgba(201,169,98,0.08)] px-4 py-3 text-sm text-[var(--luxury-gold)]"
         >
           <p className="font-medium">{getHotelSearchErrorTitle(errorCode)}</p>
-          {error ? <p className="mt-1 text-amber-900/80">{error}</p> : null}
+          {error ? <p className="mt-1 text-[var(--foreground-muted)]">{error}</p> : null}
         </div>
       ) : null}
 

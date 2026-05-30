@@ -70,8 +70,8 @@ export function HotelBookingSidebar({
   return (
     <>
       <aside className="glass-card sticky top-20 hidden h-fit space-y-5 p-6 sm:block sm:p-8 lg:top-24">
-        <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">Reserve</p>
-        <p className="text-3xl font-semibold tracking-[-0.03em]">
+        <p className="eyebrow eyebrow-gold">Reserve</p>
+        <p className="font-display text-3xl font-light tracking-[-0.03em]">
           {formatUsd(nightly)}
           <span className="text-lg font-medium text-[var(--foreground-muted)]"> / night</span>
         </p>

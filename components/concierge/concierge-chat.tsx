@@ -268,14 +268,14 @@ export function ConciergeChat({ fullPage = false, onClose }: Props) {
       <div ref={scrollRef} className="concierge-chat__messages">
         {openAiConfigured === false && messages.length === 0 && !isThinking ? (
           <div className="concierge-setup-hint page-enter" role="status">
-            <p className="font-medium text-[var(--luxury-ink)]">{t("setupTitle")}</p>
+            <p className="font-medium text-[var(--foreground)]">{t("setupTitle")}</p>
             <p className="mt-1 text-sm text-[var(--foreground-muted)]">{t("setupHint")}</p>
           </div>
         ) : null}
 
         {messages.length === 0 && !isThinking && openAiConfigured !== false ? (
           <div className="concierge-chat__welcome page-enter">
-            <p className="font-display text-xl text-[var(--luxury-ink)]">{t("welcomeTitle")}</p>
+            <p className="font-display text-xl text-[var(--foreground)]">{t("welcomeTitle")}</p>
             <p className="mt-2 text-sm leading-relaxed text-[var(--foreground-muted)]">
               {t("welcomeBody")}
             </p>

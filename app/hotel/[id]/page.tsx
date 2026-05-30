@@ -98,9 +98,9 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
   const experienceNarrative = hotel.description;
 
   return (
-    <main className="space-y-8 pb-28 sm:space-y-10 lg:pb-10">
+    <main className="page-enter space-y-10 pb-28 sm:space-y-12 lg:pb-10">
       <HotelTrackView id={hotel.id} name={hotel.name} image={hotel.image} city={hotel.city} />
-      <section className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--luxury-warm)] shadow-[var(--shadow-xl)]">
+      <section className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface-muted)] shadow-[var(--shadow-xl)]">
         <div className="absolute inset-x-0 top-0 z-20 p-4 sm:p-6">
           <div className="glass-card-soft flex items-center justify-between rounded-full px-3 py-2 sm:px-4">
             <Link href="/hotels" className="btn-ghost !px-2 text-xs sm:text-sm">
@@ -117,15 +117,15 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
           />
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/20 via-black/35 to-black/78" aria-hidden />
           <div className="absolute inset-x-0 bottom-0 z-[1] p-5 sm:p-8 lg:p-12">
-            <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-white/75">{hotel.city}</p>
-            <h1 className="font-display mt-3 max-w-5xl text-[2rem] font-medium leading-[1.03] tracking-[-0.035em] text-white sm:text-[2.7rem] lg:text-[3.7rem]">
+            <p className="eyebrow text-white/70">{hotel.city}</p>
+            <h1 className="font-display mt-4 max-w-5xl text-[2.25rem] font-light leading-[1.03] tracking-[-0.035em] text-white sm:text-[2.85rem] lg:text-[3.85rem]">
               {hotel.name}
             </h1>
             <p className="mt-3 max-w-2xl text-[0.9375rem] leading-relaxed text-white/78 sm:text-base">
               ⌖ {hotel.location}
               {hotel.country ? `, ${hotel.country}` : ""}
             </p>
-            <p className="font-display mt-4 max-w-3xl text-[1.02rem] italic leading-relaxed text-white/82 sm:text-[1.14rem]">
+            <p className="font-display mt-5 max-w-3xl text-[1.05rem] font-light italic leading-relaxed text-[var(--luxury-gold-muted)] sm:text-[1.15rem]">
               {poeticLine}
             </p>
           </div>
@@ -156,7 +156,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
           <section className="glass-card space-y-6 p-7 sm:p-10">
             <div className="flex flex-col gap-4 border-b border-[var(--border)] pb-6 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-4">
-                <h2 className="font-display text-2xl font-medium tracking-[-0.03em] text-[var(--luxury-ink)] sm:text-3xl">
+                <h2 className="font-display text-2xl font-light tracking-[-0.03em] text-[var(--foreground)] sm:text-3xl">
                   Crafted for quiet luxury
                 </h2>
                 <p className="max-w-3xl text-[0.97rem] leading-[1.75] text-[var(--foreground-muted)]">{experienceNarrative}</p>
@@ -167,14 +167,14 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
               </p>
             </div>
             <div>
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">
+              <p className="eyebrow">
                 Amenities
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 {hotel.amenities.map((amenity, index) => (
                   <article
                     key={amenity}
-                    className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 shadow-[var(--shadow-xs)]"
+                    className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] p-4 transition-colors duration-300 hover:border-[var(--border-strong)]"
                   >
                     <p className="text-sm font-medium text-[var(--foreground)]">
                       <span className="mr-2 text-[var(--foreground-muted)]">{amenityIcons[index % amenityIcons.length]}</span>
@@ -192,7 +192,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
             </p>
             <div className="grid gap-4 sm:grid-cols-3">
               {hotel.experiences.map((item) => (
-                <article key={item} className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[var(--shadow-xs)]">
+                <article key={item} className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] p-5 transition-colors duration-300 hover:border-[var(--border-strong)]">
                   <p className="text-sm font-medium text-[var(--foreground)]">{item}</p>
                 </article>
               ))}
@@ -208,7 +208,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
 
           {hotel.reviewsSummary.length > 0 && (
             <section className="glass-card space-y-5 p-7 sm:p-10">
-              <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">
+              <p className="eyebrow">
                 Guest reviews
               </p>
               <div className="grid gap-4 md:grid-cols-3">
@@ -224,7 +224,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
           <section className="glass-card space-y-5 p-7 sm:p-10">
             <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">Concierge</p>
             <div className="flex items-center gap-4 rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--luxury-ink)] text-sm font-semibold text-white">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(201,169,98,0.35)] bg-[rgba(201,169,98,0.12)] text-sm font-semibold text-[var(--luxury-gold)]">
                 AX
               </div>
               <div>
@@ -239,18 +239,18 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
           <section className="glass-card space-y-5 p-7 sm:p-10">
             <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">Location</p>
             <div className="overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)]">
-              <div className="relative flex aspect-[16/8] items-end bg-[linear-gradient(145deg,#d6d3d1_0%,#e7e5e4_45%,#f5f5f4_100%)] p-5">
+              <div className="relative flex aspect-[16/8] items-end bg-[linear-gradient(145deg,#1a1816_0%,#121110_45%,#0a0908_100%)] p-5">
                 <div
-                  className="pointer-events-none absolute inset-0 bg-[linear-gradient(160deg,#e7e5e4_0%,#d6d3d1_50%,#fafaf9_100%)]"
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_50%,rgba(201,169,98,0.06)_0%,transparent_70%)]"
                   aria-hidden
                 />
                 {hotel.coordinates.lat !== 0 && (
                   <div
-                    className="pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--luxury-ink)] shadow-[0_0_0_8px_rgba(9,9,11,0.12)]"
+                    className="pointer-events-none absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[var(--luxury-gold)] shadow-[0_0_0_8px_rgba(201,169,98,0.15)]"
                     aria-hidden
                   />
                 )}
-                <div className="relative rounded-[var(--radius-lg)] border border-white/60 bg-white/80 px-4 py-2 text-sm font-medium text-[var(--foreground)] shadow-[var(--shadow-sm)] backdrop-blur-md">
+                <div className="relative rounded-[var(--radius-lg)] border border-[var(--border-glass)] bg-[rgba(12,11,10,0.85)] px-4 py-2 text-sm font-medium text-[var(--foreground)] shadow-[var(--shadow-sm)] backdrop-blur-md">
                   {hotel.location}
                   {hotel.coordinates.lat !== 0 && (
                     <span className="mt-1 block text-xs font-normal text-[var(--foreground-muted)]">
@@ -278,7 +278,7 @@ export default async function HotelDetailPage({ params, searchParams }: HotelDet
             <p className="text-[0.6875rem] font-semibold uppercase tracking-[0.14em] text-[var(--foreground-subtle)]">
               Similar stays
             </p>
-            <h2 className="font-display mt-2 text-2xl font-medium tracking-[-0.03em] text-[var(--luxury-ink)]">
+            <h2 className="font-display mt-2 text-2xl font-light tracking-[-0.03em] text-[var(--foreground)]">
               You may also like
             </h2>
           </div>
