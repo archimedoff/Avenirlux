@@ -51,7 +51,7 @@ export async function searchHotelsAggregated(query: HotelSearchQuery): Promise<H
             sources,
             meta: { readyForBooking: false, readyForPayments: false, multiProvider: true },
           };
-    setCachedSearch(query, result);
+    if (merged.length) setCachedSearch(query, result);
     return result;
   }
 

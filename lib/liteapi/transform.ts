@@ -103,7 +103,7 @@ export function mergeListingHotel(
   nights: number,
   cityFallback: string
 ): Hotel | null {
-  if (!meta && !rate.hotelId) return null;
+  if (!meta?.name?.trim() || !rate.hotelId) return null;
   const id = rate.hotelId;
   const roomType = rate.roomTypes?.[0];
   const total = roomType?.offerRetailRate?.amount ?? roomType?.rates?.[0]?.retailRate?.total?.[0]?.amount;
@@ -111,7 +111,7 @@ export function mergeListingHotel(
   const refundable = roomType?.rates?.[0]?.cancellationPolicies?.refundableTag === "RFN";
   const facilities = facilitiesFromMeta(meta);
 
-  const name = meta?.name || `AvenirLux Residence ${id}`;
+  const name = meta!.name.trim();
   const image = meta?.main_photo || meta?.thumbnail || "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1800&q=82";
   const address = meta?.address || cityFallback;
 

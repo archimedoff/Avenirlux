@@ -131,7 +131,8 @@ export async function* runConciergeChat(
       return;
     }
 
-    yield { type: "failure", retryable: true };
+    yield emitMeta(intent, "curated", "curated", "unavailable");
+    yield* streamMock({ ...context, fallback: { reason: "unavailable" } });
     yield { type: "done" };
   }
 }
