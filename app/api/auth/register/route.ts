@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 
 import { userRepository } from "@/lib/db/repositories/user-repository";
+import { checkRateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const limit = checkRateLimit(`auth:register:${ip}`, 10);
+  if (!limit.allowed) return rateLimitResponse(limit);
+
   try {
     const body = await request.json();
     const email = typeof body.email === "string" ? body.email.trim() : "";

@@ -5,7 +5,7 @@ import type { UserRole } from "@/lib/db/types";
 
 export const authConfig = {
   trustHost: true,
-  session: { strategy: "jwt" },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60, updateAge: 24 * 60 * 60 },
   pages: {
     signIn: "/auth",
   },

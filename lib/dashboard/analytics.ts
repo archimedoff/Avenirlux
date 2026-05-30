@@ -2,7 +2,6 @@ import { listingsRepository } from "@/lib/db/repositories/listings-repository";
 import { bookingRequestsRepository } from "@/lib/db/repositories/booking-requests-repository";
 import { prisma } from "@/lib/db/prisma";
 
-import type { UserBookingRecord } from "@/lib/db/types";
 
 export type AnalyticsPoint = { label: string; value: number };
 
@@ -13,6 +12,8 @@ export type AdminAnalytics = {
   activeUsers: number;
   totalHosts: number;
   publishedListings: number;
+  pendingListings: number;
+  emailQueuePending: number;
   commissionTotal: number;
   commissionRate: number;
   bookingTrend: AnalyticsPoint[];
@@ -59,19 +60,34 @@ function bookingCountTrend(bookings: { createdAt: string }[]): AnalyticsPoint[] 
   return MONTHS.map((label) => ({ label, value: buckets.get(label) ?? 0 }));
 }
 
-const MOCK_HOTELS = [
-  { hotelId: "h1", name: "Maison Lumière", bookings: 42, revenue: 128400, occupancy: 78 },
-  { hotelId: "h2", name: "The Obsidian House", bookings: 36, revenue: 98200, occupancy: 71 },
-  { hotelId: "h3", name: "Villa Serenité", bookings: 28, revenue: 86400, occupancy: 65 },
-  { hotelId: "h4", name: "Amanère Tokyo", bookings: 24, revenue: 112000, occupancy: 82 },
-  { hotelId: "h5", name: "Côte Azure", bookings: 19, revenue: 54000, occupancy: 58 },
-];
+function buildHotelPerformance(bookings: { externalHotelId: string | null; hotelName: string | null; total: number }[]) {
+  const map = new Map<string, { name: string; bookings: number; revenue: number }>();
+  for (const b of bookings) {
+    const id = b.externalHotelId ?? "unknown";
+    const name = b.hotelName ?? "Stay";
+    const row = map.get(id) ?? { name, bookings: 0, revenue: 0 };
+    row.bookings += 1;
+    row.revenue += b.total;
+    map.set(id, row);
+  }
+  return [...map.entries()]
+    .map(([hotelId, v]) => ({
+      hotelId,
+      name: v.name,
+      bookings: v.bookings,
+      revenue: v.revenue,
+      occupancy: Math.min(95, 40 + v.bookings * 4),
+    }))
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 8);
+}
 
 export async function getAdminAnalytics(): Promise<AdminAnalytics> {
-  const [bookings, users, listings] = await Promise.all([
-    prisma.booking.findMany({ where: { kind: "guest_booking" } }),
+  const [bookings, users, listings, emailPending] = await Promise.all([
+    prisma.booking.findMany({ where: { kind: "guest_booking", status: { in: ["upcoming", "completed", "confirmed"] } } }),
     prisma.user.findMany(),
     prisma.property.findMany(),
+    prisma.emailNotification.count({ where: { status: "queued" } }),
   ]);
   const bookingRows = bookings.map((b) => ({
     total: b.total,
@@ -79,14 +95,18 @@ export async function getAdminAnalytics(): Promise<AdminAnalytics> {
     id: b.id,
     confirmationRef: b.confirmationRef ?? b.id,
     hotelName: b.hotelName ?? "Stay",
+    externalHotelId: b.externalHotelId,
   }));
   const now = new Date();
   const thisMonth = now.getMonth();
   const revenueTotal = bookingRows.reduce((s, b) => s + b.total, 0);
-  const revenueThisMonth = bookingRows
-    .filter((b) => new Date(b.createdAt).getMonth() === thisMonth)
-    .reduce((s, b) => s + b.total, 0);
+  const revenueThisMonth = bookingRows.filter((b) => new Date(b.createdAt).getMonth() === thisMonth).reduce((s, b) => s + b.total, 0);
   const commissionRate = 0.12;
+  const hotelPerformance = buildHotelPerformance(bookings);
+  const occupancyOverview = hotelPerformance.length
+    ? Math.round(hotelPerformance.reduce((s, h) => s + h.occupancy, 0) / hotelPerformance.length)
+    : 0;
+
   return {
     totalBookings: bookingRows.length,
     revenueTotal,
@@ -94,6 +114,8 @@ export async function getAdminAnalytics(): Promise<AdminAnalytics> {
     activeUsers: users.length,
     totalHosts: users.filter((u) => u.role === "host" || u.role === "admin").length,
     publishedListings: listings.filter((l) => l.published).length,
+    pendingListings: listings.filter((l) => !l.published).length,
+    emailQueuePending: emailPending,
     commissionTotal: Math.round(revenueTotal * commissionRate),
     commissionRate,
     bookingTrend: bookingCountTrend(bookingRows),
@@ -104,22 +126,22 @@ export async function getAdminAnalytics(): Promise<AdminAnalytics> {
       amount: b.total,
       at: b.createdAt,
     })),
-    hotelPerformance: MOCK_HOTELS,
-    occupancyOverview: 72,
+    hotelPerformance,
+    occupancyOverview,
   };
 }
 
 export async function getHostAnalytics(ownerId: string): Promise<HostAnalytics> {
   const mine = await listingsRepository.listByOwner(ownerId);
   const myRequests = await bookingRequestsRepository.listByOwner(ownerId);
-  const confirmed = myRequests.filter((r) => r.status === "confirmed");
-  const revenueTotal = confirmed.reduce((s, r) => s + r.total, 0);
+  const paid = myRequests.filter((r) => r.status === "confirmed" || r.kind === "guest_booking");
+  const revenueTotal = paid.reduce((s, r) => s + r.total, 0);
   const now = new Date();
-  const revenueThisMonth = confirmed
-    .filter((r) => new Date(r.createdAt).getMonth() === now.getMonth())
-    .reduce((s, r) => s + r.total, 0);
+  const revenueThisMonth = paid.filter((r) => new Date(r.createdAt).getMonth() === now.getMonth()).reduce((s, r) => s + r.total, 0);
+  const confirmedCount = paid.length;
+  const occupancyRate = mine.length ? Math.min(95, Math.round((confirmedCount / Math.max(mine.length * 4, 1)) * 100)) : 0;
   return {
-    occupancyRate: mine.length ? Math.min(95, 68 + mine.length * 3) : 0,
+    occupancyRate,
     revenueTotal,
     revenueThisMonth,
     pendingRequests: myRequests.filter((r) => r.status === "pending").length,
@@ -134,4 +156,3 @@ export async function getHostAnalytics(ownerId: string): Promise<HostAnalytics> 
     })),
   };
 }
-

@@ -10,6 +10,8 @@ import { formatCurrency, formatPercent } from "@/lib/dashboard/format";
 
 const nav = [
   { href: "/admin", label: "Overview", icon: "◈" },
+  { href: "/host/listings", label: "Listings", icon: "◇" },
+  { href: "/host/bookings", label: "Bookings", icon: "◉" },
 ];
 
 export function AdminDashboard({ data }: { data: AdminAnalytics }) {
@@ -20,6 +22,7 @@ export function AdminDashboard({ data }: { data: AdminAnalytics }) {
         <StatCard label="Revenue" value={formatCurrency(data.revenueTotal)} hint={`This month ${formatCurrency(data.revenueThisMonth)}`} accent />
         <StatCard label="Active members" value={String(data.activeUsers)} hint={`${data.totalHosts} hosts`} />
         <StatCard label="Commission" value={formatCurrency(data.commissionTotal)} hint={`${formatPercent(data.commissionRate * 100)} platform rate`} />
+        <StatCard label="Pending listings" value={String(data.pendingListings)} hint={`${data.emailQueuePending} emails queued`} />
       </section>
 
       <section className="dash-grid-2">

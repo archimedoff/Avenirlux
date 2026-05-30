@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { Cormorant_Garamond, Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
+import { AnalyticsProvider } from "@/components/analytics-provider";
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteChrome } from "@/components/site-chrome";
-import { getSocialProviderCatalog } from "@/lib/auth/providers-meta";
 import { getSiteUrl } from "@/lib/site";
 
 import "./globals.css";
-
-export const dynamic = "force-dynamic";
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -76,12 +74,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const socialProviders = getSocialProviderCatalog();
-
   return (
     <html lang="en" className={`${plusJakarta.variable} ${cormorant.variable} ${fraunces.variable}`}>
       <body className={`${plusJakarta.className} flex min-h-screen flex-col antialiased`}>
-        <AppProviders socialProviders={socialProviders}>
+        <AppProviders>
+          <AnalyticsProvider />
           <SiteChrome>{children}</SiteChrome>
         </AppProviders>
       </body>

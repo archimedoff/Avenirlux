@@ -16,7 +16,7 @@ export function AppProviders({
   socialProviders?: SocialProviderState[];
 }) {
   return (
-    <SessionProvider basePath="/api/auth" refetchOnWindowFocus={false}>
+    <SessionProvider basePath="/api/auth" refetchOnWindowFocus={false} refetchInterval={5 * 60}>
       <LocaleProvider>
         <ConciergeProvider>
           <AuthModalProvider socialProviders={socialProviders}>{children}</AuthModalProvider>
