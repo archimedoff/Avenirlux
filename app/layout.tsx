@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Plus_Jakarta_Sans } from "next/font/google";
+import { Cormorant_Garamond, Fraunces, Plus_Jakarta_Sans } from "next/font/google";
 
 import { AppProviders } from "@/components/providers/app-providers";
 import { SiteChrome } from "@/components/site-chrome";
@@ -14,6 +14,13 @@ const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-plus-jakarta",
+});
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-cormorant",
+  weight: ["300", "400", "500", "600"],
 });
 
 const fraunces = Fraunces({
@@ -72,7 +79,7 @@ export default function RootLayout({
   const socialProviders = getSocialProviderCatalog();
 
   return (
-    <html lang="en" className={`${plusJakarta.variable} ${fraunces.variable}`}>
+    <html lang="en" className={`${plusJakarta.variable} ${cormorant.variable} ${fraunces.variable}`}>
       <body className={`${plusJakarta.className} flex min-h-screen flex-col antialiased`}>
         <AppProviders socialProviders={socialProviders}>
           <SiteChrome>{children}</SiteChrome>
