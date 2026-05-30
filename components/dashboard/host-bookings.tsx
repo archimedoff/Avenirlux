@@ -34,22 +34,32 @@ export function HostBookingsClient({ requests }: { requests: BookingRequestRecor
   };
 
   return (
-    <DashboardShell title="Booking requests" subtitle="Review and respond to guest inquiries" nav={hostNav} badge="Host">
+    <DashboardShell title="Reservations" subtitle="Manage guest requests and confirmed stays" nav={hostNav} badge="Host">
       {items.length === 0 ? (
-        <div className="dash-panel py-12 text-center text-sm text-[var(--foreground-muted)]">No requests yet.</div>
+        <div className="dash-panel py-12 text-center text-sm text-[var(--foreground-muted)]">No reservations yet.</div>
       ) : (
         <div className="space-y-3">
           {items.map((r) => (
             <article key={r.id} className="dash-panel flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-medium">{r.guestName}</p>
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="font-medium">{r.guestName}</p>
+                  {r.kind === "guest_booking" && (
+                    <span className="rounded-full border border-[rgba(201,169,98,0.35)] px-2 py-0.5 text-[0.625rem] font-semibold uppercase tracking-[0.12em] text-[var(--luxury-gold-muted)]">
+                      Instant
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-[var(--foreground-muted)]">{r.guestEmail}</p>
                 <p className="mt-2 text-sm">{r.checkIn} → {r.checkOut} · {r.guests} guests · {r.roomName}</p>
+                {r.confirmationRef && (
+                  <p className="mt-1 font-mono text-xs text-[var(--foreground-subtle)]">Ref {r.confirmationRef}</p>
+                )}
                 <p className="mt-1 font-semibold">{formatCurrency(r.total)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <span className={`dash-status dash-status--${r.status === "pending" ? "pending_review" : r.status}`}>{r.status}</span>
-                {r.status === "pending" && (
+                {r.kind !== "guest_booking" && r.status === "pending" && (
                   <>
                     <button type="button" className="btn-primary text-sm" onClick={() => setStatus(r.id, "confirmed")}>Accept</button>
                     <button type="button" className="btn-ghost text-sm" onClick={() => setStatus(r.id, "declined")}>Decline</button>

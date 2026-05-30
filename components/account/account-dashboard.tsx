@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { HotelCard } from "@/components/hotel-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RecentlyViewedStrip } from "@/components/recently-viewed-strip";
 import { formatUsd } from "@/lib/booking-utils";
+import { cancelBooking } from "@/lib/bookings-api";
 import { COUNTRIES } from "@/lib/countries";
 import type { ConciergePreferences, PublicUser, UserBookingRecord } from "@/lib/db/types";
 import type { Hotel } from "@/lib/hotel-types";
@@ -17,7 +19,9 @@ type Props = {
   savedHotels: Hotel[];
 };
 
-export function AccountDashboard({ user: initialUser, bookings, savedHotels }: Props) {
+export function AccountDashboard({ user: initialUser, bookings: initialBookings, savedHotels }: Props) {
+  const router = useRouter();
+  const [bookings, setBookings] = useState(initialBookings);
   const [user, setUser] = useState(initialUser);
   const [phone, setPhone] = useState(initialUser.profile.phone || "");
   const [country, setCountry] = useState(initialUser.profile.country || "");
@@ -79,7 +83,15 @@ export function AccountDashboard({ user: initialUser, bookings, savedHotels }: P
         ) : (
           <div className="grid gap-4">
             {upcoming.map((b) => (
-              <BookingCard key={b.id} booking={b} />
+              <BookingCard
+                key={b.id}
+                booking={b}
+                onCancel={async (id) => {
+                  await cancelBooking(id);
+                  setBookings((prev) => prev.map((x) => (x.id === id ? { ...x, status: "cancelled" as const } : x)));
+                  router.refresh();
+                }}
+              />
             ))}
           </div>
         )}
@@ -187,9 +199,19 @@ export function AccountDashboard({ user: initialUser, bookings, savedHotels }: P
   );
 }
 
-function BookingCard({ booking, muted }: { booking: UserBookingRecord; muted?: boolean }) {
+function BookingCard({
+  booking,
+  muted,
+  onCancel,
+}: {
+  booking: UserBookingRecord;
+  muted?: boolean;
+  onCancel?: (id: string) => Promise<void>;
+}) {
+  const [cancelling, setCancelling] = useState(false);
+
   return (
-    <article className={`flex gap-4 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] p-4 ${muted ? "opacity-80" : "bg-[var(--surface)]"}`}>
+    <article className={`flex gap-4 overflow-hidden rounded-[var(--radius-lg)] border border-[var(--border)] p-4 ${muted ? "opacity-80" : "bg-[var(--surface-elevated)]"}`}>
       <img src={booking.hotelImage} alt="" className="h-24 w-28 shrink-0 rounded-[var(--radius-lg)] object-cover" />
       <div className="min-w-0 flex-1">
         <p className="font-medium">{booking.hotelName}</p>
@@ -197,12 +219,33 @@ function BookingCard({ booking, muted }: { booking: UserBookingRecord; muted?: b
           {booking.roomName} · {booking.checkIn} → {booking.checkOut}
         </p>
         <p className="mt-2 text-xs text-[var(--foreground-subtle)]">
-          Ref {booking.confirmationRef} · <span className="capitalize">{booking.status}</span>
+          Ref {booking.confirmationRef} ·{" "}
+          <span className={booking.status === "cancelled" ? "text-red-400" : "capitalize"}>{booking.status.replace("_", " ")}</span>
         </p>
-        <p className="mt-1 font-semibold">{formatUsd(booking.total)}</p>
-        <Link href={`/hotel/${booking.hotelId}`} className="mt-2 inline-block text-sm font-medium hover:underline">
-          View hotel
-        </Link>
+        <p className="mt-1 font-display text-lg font-light">{formatUsd(booking.total)}</p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <Link href={`/hotel/${booking.hotelId}`} className="text-sm font-medium text-[var(--luxury-gold-muted)] hover:text-[var(--luxury-gold)]">
+            View hotel
+          </Link>
+          {!muted && booking.status === "upcoming" && onCancel && (
+            <button
+              type="button"
+              disabled={cancelling}
+              className="text-sm text-[var(--foreground-muted)] hover:text-red-400 disabled:opacity-50"
+              onClick={async () => {
+                if (!confirm("Cancel this reservation?")) return;
+                setCancelling(true);
+                try {
+                  await onCancel(booking.id);
+                } finally {
+                  setCancelling(false);
+                }
+              }}
+            >
+              {cancelling ? "Cancelling…" : "Cancel stay"}
+            </button>
+          )}
+        </div>
       </div>
     </article>
   );

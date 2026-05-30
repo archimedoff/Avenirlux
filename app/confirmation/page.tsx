@@ -11,11 +11,13 @@ type ConfirmationPageProps = {
     guests?: string;
     roomId?: string;
     ref?: string;
+    failed?: string;
   }>;
 };
 
 export default async function ConfirmationPage({ searchParams }: ConfirmationPageProps) {
   const params = await searchParams;
+  const failed = params.failed === "1" || params.failed === "true";
   const hotel = params.hotelId
     ? await fetchHotelById(params.hotelId, {
         checkIn: params.checkIn,
@@ -30,6 +32,7 @@ export default async function ConfirmationPage({ searchParams }: ConfirmationPag
   return (
     <main className="flex min-h-[70vh] items-center justify-center pb-12">
       <ConfirmationSuccess
+        failed={failed}
         fallbackRef={params.ref}
         hotelName={hotel?.name}
         hotelImage={hotel?.image}
