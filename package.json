@@ -18,7 +18,9 @@
     "db:urls": "dotenv -e .env.local -- npx tsx scripts/compose-database-urls.ts",
     "db:sync-env": "dotenv -e .env.local -- tsx scripts/sync-supabase-env.ts",
     "storage:ensure-bucket": "dotenv -e .env.local -- npx tsx scripts/ensure-storage-bucket.ts",
-    "verify:hotels": "dotenv -e .env.local -- npx tsx scripts/verify-live-hotels.ts"
+    "verify:hotels": "dotenv -e .env.local -- npx tsx scripts/verify-live-hotels.ts",
+    "verify:production": "dotenv -e .env.local -- npx tsx scripts/verify-production-readiness.ts",
+    "smoke:production": "npx tsx scripts/smoke-test-production.ts"
   },
   "keywords": [],
   "author": "",

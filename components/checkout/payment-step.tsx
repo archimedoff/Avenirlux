@@ -51,7 +51,9 @@ export function PaymentStep({ onSuccess, onError, totalLabel, mockMode, onMockPa
       {mockMode ? (
         <div className="rounded-[var(--radius-lg)] border border-dashed border-[var(--border-strong)] bg-[var(--surface-muted)] p-6 text-center">
           <p className="text-sm text-[var(--foreground-muted)]">Stripe not configured — development mock payment</p>
-          <p className="mt-2 text-xs text-[var(--foreground-subtle)]">Set STRIPE_SECRET_KEY and NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY to enable live payments.</p>
+          {process.env.NODE_ENV === "development" && (
+            <p className="mt-2 text-xs text-[var(--foreground-subtle)]">Configure Stripe env vars for live payments.</p>
+          )}
         </div>
       ) : (
         <div className="rounded-[var(--radius-lg)] border border-[var(--border)] bg-[var(--surface-muted)] p-4">
