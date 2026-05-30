@@ -52,19 +52,19 @@ export function SearchBar({
   return (
     <form
       onSubmit={onSubmit}
-      className={`glass-search grid gap-3.5 rounded-[var(--radius-card)] p-4 transition-[transform,box-shadow] duration-500 sm:gap-4 ${
-        compact ? "md:grid-cols-5 md:items-end" : "sm:p-5 md:grid-cols-4 md:items-end md:p-6"
+      className={`glass-search grid gap-4 rounded-[var(--radius-card)] p-5 transition-[transform,box-shadow] duration-500 sm:p-6 ${
+        compact ? "md:grid-cols-5 md:items-end" : "md:grid-cols-[1.2fr_1fr_1fr_0.8fr_auto] md:items-end"
       }`}
     >
-      <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
-        Where
+      <label className="flex flex-col gap-2">
+        <span className="eyebrow">Where</span>
         <input
           type="text"
           list="avenirlux-cities"
           value={city}
           onChange={(e) => setCity(e.target.value)}
           placeholder="City or region"
-          className="input-premium !mt-2 font-medium normal-case tracking-normal"
+          className="input-premium !mt-0 font-medium normal-case tracking-normal"
         />
         <datalist id="avenirlux-cities">
           {DESTINATIONS.map((c) => (
@@ -72,27 +72,23 @@ export function SearchBar({
           ))}
         </datalist>
       </label>
-      <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
-        Check in
-        <input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="input-premium !mt-2" />
+      <label className="flex flex-col gap-2">
+        <span className="eyebrow">Check in</span>
+        <input type="date" min={today} value={checkIn} onChange={(e) => setCheckIn(e.target.value)} className="input-premium !mt-0" />
       </label>
-      <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
-        Check out
-        <input type="date" min={minCheckOut} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="input-premium !mt-2" />
+      <label className="flex flex-col gap-2">
+        <span className="eyebrow">Check out</span>
+        <input type="date" min={minCheckOut} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} className="input-premium !mt-0" />
       </label>
-      <label className="text-[0.75rem] font-semibold uppercase tracking-wider text-[var(--foreground-subtle)]">
-        Guests
-        <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="input-premium !mt-2">
+      <label className="flex flex-col gap-2">
+        <span className="eyebrow">Guests</span>
+        <select value={guests} onChange={(e) => setGuests(Number(e.target.value))} className="input-premium !mt-0">
           {guestOptions.map((n) => (
-            <option key={n} value={n}>
-              {n} guest{n > 1 ? "s" : ""}
-            </option>
+            <option key={n} value={n}>{n} guest{n > 1 ? "s" : ""}</option>
           ))}
         </select>
       </label>
-      <button type="submit" className="btn-primary h-[46px] w-full">
-        Search stays
-      </button>
+      <button type="submit" className="btn-primary h-[48px] w-full md:self-end">Search stays</button>
     </form>
   );
 }
