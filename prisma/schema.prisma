@@ -24,13 +24,11 @@ enum ListingStatus {
 enum PropertyType {
   hotel
   apartment
-  studio
   villa
-  residence
-  boutique_stay
+  studio
   penthouse
-  cabin
-  beach_house
+  guest_house
+  resort_villa
 }
 
 enum BookingRecordStatus {

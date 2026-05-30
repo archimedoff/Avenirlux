@@ -2,29 +2,49 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
+import { AmenityPicker } from "@/components/host/amenity-picker";
+import { PhotoUploader } from "@/components/list-property/photo-uploader";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import type { HostListingRecord } from "@/lib/db/types";
+import { formatCurrency } from "@/lib/dashboard/format";
+import { PROPERTY_TYPES, type AmenityId, type PropertyType } from "@/lib/listing/types";
+import { useTranslations } from "@/lib/i18n/use-translations";
 
-const hostNav = [
-  { href: "/host", label: "Overview", icon: "◈" },
-  { href: "/host/listings", label: "Listings", icon: "◇" },
-  { href: "/host/bookings", label: "Bookings", icon: "◉" },
-  { href: "/host/calendar", label: "Calendar", icon: "◌" },
-  { href: "/host/analytics", label: "Analytics", icon: "◎" },
-  { href: "/list-property", label: "Add property", icon: "＋" },
-];
-
-const TABS = ["Details", "Images", "Rooms", "Pricing", "Availability"] as const;
+type Tab = "details" | "images" | "rooms" | "pricing" | "availability";
 
 export function HostListingEditor({ listing }: { listing: HostListingRecord }) {
   const router = useRouter();
-  const [tab, setTab] = useState<(typeof TABS)[number]>("Details");
+  const { t } = useTranslations("host");
+  const { t: tList } = useTranslations("listProperty");
+  const [tab, setTab] = useState<Tab>("details");
   const [form, setForm] = useState(listing);
   const [saving, setSaving] = useState(false);
-  const [galleryInput, setGalleryInput] = useState("");
   const [roomDraft, setRoomDraft] = useState({ name: "", pricePerNight: 400, maxGuests: 2, description: "" });
+
+  const hostNav = useMemo(
+    () => [
+      { href: "/host", label: t("overview"), icon: "◈" },
+      { href: "/host/listings", label: t("listings"), icon: "◇" },
+      { href: "/host/bookings", label: t("bookings"), icon: "◉" },
+      { href: "/host/calendar", label: t("calendar"), icon: "◌" },
+      { href: "/host/analytics", label: t("analytics"), icon: "◎" },
+      { href: "/list-property", label: t("addProperty"), icon: "＋" },
+    ],
+    [t],
+  );
+
+  const tabs: { id: Tab; label: string }[] = [
+    { id: "details", label: t("tabDetails") },
+    { id: "images", label: t("tabImages") },
+    { id: "rooms", label: t("tabRooms") },
+    { id: "pricing", label: t("tabPricing") },
+    { id: "availability", label: t("tabAvailability") },
+  ];
+
+  const propertyType = (form.metadata?.propertyType ?? "hotel") as PropertyType;
+  const amenityIds = (form.amenities.filter((a) => !a.includes(" ")) as AmenityId[]);
 
   const save = async (patch: Partial<HostListingRecord>) => {
     setSaving(true);
@@ -41,139 +61,245 @@ export function HostListingEditor({ listing }: { listing: HostListingRecord }) {
     }
   };
 
-  const publish = () => save({ status: "pending_review" });
+  const setPropertyType = (pt: PropertyType) => {
+    setForm({
+      ...form,
+      metadata: { ...form.metadata, propertyType: pt },
+      categories: [pt, ...(form.categories ?? []).filter((c) => c !== pt)],
+    });
+  };
 
   return (
-    <DashboardShell title={form.name} subtitle="Manage your residence" nav={hostNav} badge="Host">
+    <DashboardShell title={form.name} subtitle={t("manageSubtitle")} nav={hostNav} badge={t("badge")}>
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className={`dash-status dash-status--${form.status}`}>{form.status.replace("_", " ")}</span>
+        <span className="text-xs text-[var(--foreground-subtle)]">
+          {form.status === "published" ? t("liveOnSite") : t("hiddenFromSite")}
+        </span>
+      </div>
+
       <div className="dash-tabs">
-        {TABS.map((t) => (
-          <button key={t} type="button" className={`dash-tab ${tab === t ? "dash-tab--active" : ""}`} onClick={() => setTab(t)}>
-            {t}
+        {tabs.map(({ id, label }) => (
+          <button
+            key={id}
+            type="button"
+            className={`dash-tab ${tab === id ? "dash-tab--active" : ""}`}
+            onClick={() => setTab(id)}
+          >
+            {label}
           </button>
         ))}
       </div>
 
-      {tab === "Details" && (
+      {tab === "details" && (
         <div className="dash-panel space-y-4">
           <label className="dash-field">
-            <span>Name</span>
+            <span>{tList("fields.name")}</span>
             <input className="input-premium" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
           </label>
           <label className="dash-field">
-            <span>Description</span>
-            <textarea className="input-premium min-h-[120px]" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            <span>{tList("fields.fullDescription")}</span>
+            <textarea
+              className="input-premium min-h-[140px]"
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
           </label>
+          <div className="dash-field">
+            <span>{t("propertyType")}</span>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {PROPERTY_TYPES.map((pt) => (
+                <button
+                  key={pt.id}
+                  type="button"
+                  className={`amenity-chip ${propertyType === pt.id ? "amenity-chip--active" : ""}`}
+                  onClick={() => setPropertyType(pt.id)}
+                >
+                  {pt.icon} {tList(`propertyTypes.${pt.id}.title`)}
+                </button>
+              ))}
+            </div>
+          </div>
           <label className="dash-field">
-            <span>Location</span>
+            <span>{tList("fields.district")}</span>
             <input className="input-premium" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           </label>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="dash-field">
-              <span>City</span>
+              <span>{tList("fields.city")}</span>
               <input className="input-premium" value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
             </label>
             <label className="dash-field">
-              <span>Country</span>
+              <span>{tList("fields.country")}</span>
               <input className="input-premium" value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })} />
             </label>
           </div>
-          <label className="dash-field">
-            <span>Amenities (comma-separated)</span>
-            <input className="input-premium" value={form.amenities.join(", ")} onChange={(e) => setForm({ ...form, amenities: e.target.value.split(",").map((s) => s.trim()).filter(Boolean) })} />
-          </label>
-          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ name: form.name, description: form.description, location: form.location, city: form.city, country: form.country, amenities: form.amenities })}>
-            Save details
+          <div className="dash-field">
+            <span>{tList("steps.amenities")}</span>
+            <AmenityPicker
+              value={amenityIds}
+              onChange={(ids) => setForm({ ...form, amenities: ids })}
+            />
+          </div>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={saving}
+            onClick={() =>
+              save({
+                name: form.name,
+                description: form.description,
+                location: form.location,
+                city: form.city,
+                country: form.country,
+                amenities: form.amenities,
+                metadata: { ...form.metadata, propertyType },
+                categories: form.categories,
+              })
+            }
+          >
+            {t("saveDetails")}
           </button>
         </div>
       )}
 
-      {tab === "Images" && (
+      {tab === "images" && (
         <div className="dash-panel space-y-4">
-          <label className="dash-field">
-            <span>Cover image URL</span>
-            <input className="input-premium" value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
-          </label>
-          {form.image && <img src={form.image} alt="" className="aspect-video w-full max-w-md rounded-[var(--radius-lg)] object-cover" />}
-          <label className="dash-field">
-            <span>Add gallery URL</span>
-            <div className="flex gap-2">
-              <input className="input-premium flex-1" value={galleryInput} onChange={(e) => setGalleryInput(e.target.value)} placeholder="https://..." />
-              <button type="button" className="btn-secondary" onClick={() => { if (galleryInput) { setForm({ ...form, gallery: [...form.gallery, galleryInput] }); setGalleryInput(""); } }}>Add</button>
-            </div>
-          </label>
-          <div className="grid grid-cols-3 gap-2">
-            {form.gallery.map((url, i) => (
-              <div key={i} className="relative aspect-square overflow-hidden rounded-lg">
-                <img src={url} alt="" className="h-full w-full object-cover" />
-                <button type="button" className="absolute right-1 top-1 rounded bg-black/50 px-1 text-xs text-white" onClick={() => setForm({ ...form, gallery: form.gallery.filter((_, j) => j !== i) })}>×</button>
-              </div>
-            ))}
-          </div>
-          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ image: form.image, gallery: form.gallery })}>Save images</button>
+          <PhotoUploader
+            propertyId={listing.id}
+            persistDraft={false}
+            cover={form.image}
+            gallery={form.gallery}
+            onCoverChange={(image) => setForm({ ...form, image })}
+            onGalleryChange={(gallery) => setForm({ ...form, gallery })}
+          />
+          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ image: form.image, gallery: form.gallery })}>
+            {t("saveImages")}
+          </button>
         </div>
       )}
 
-      {tab === "Rooms" && (
+      {tab === "rooms" && (
         <div className="dash-panel space-y-4">
           {form.rooms.map((room) => (
             <div key={room.id} className="rounded-lg border border-[var(--border)] p-4">
               <p className="font-medium">{room.name}</p>
-              <p className="text-sm text-[var(--foreground-muted)]">{formatCurrency(room.pricePerNight)}/night · {room.maxGuests} guests</p>
+              <p className="text-sm text-[var(--foreground-muted)]">
+                {formatCurrency(room.pricePerNight)}/night · {room.maxGuests} guests
+              </p>
             </div>
           ))}
           <div className="grid gap-3 sm:grid-cols-2">
             <input className="input-premium" placeholder="Room name" value={roomDraft.name} onChange={(e) => setRoomDraft({ ...roomDraft, name: e.target.value })} />
             <input className="input-premium" type="number" placeholder="Price/night" value={roomDraft.pricePerNight} onChange={(e) => setRoomDraft({ ...roomDraft, pricePerNight: Number(e.target.value) })} />
           </div>
-          <button type="button" className="btn-secondary" onClick={() => {
-            const id = `room-${Date.now()}`;
-            const rooms = [...form.rooms, { id, ...roomDraft, description: roomDraft.description || "Premium room" }];
-            setForm({ ...form, rooms });
-            setRoomDraft({ name: "", pricePerNight: 400, maxGuests: 2, description: "" });
-            save({ rooms });
-          }}>Add room</button>
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => {
+              const id = `room-${Date.now()}`;
+              const rooms = [...form.rooms, { id, ...roomDraft, description: roomDraft.description || "Premium room" }];
+              setForm({ ...form, rooms });
+              setRoomDraft({ name: "", pricePerNight: 400, maxGuests: 2, description: "" });
+              save({ rooms });
+            }}
+          >
+            Add room
+          </button>
         </div>
       )}
 
-      {tab === "Pricing" && (
+      {tab === "pricing" && (
         <div className="dash-panel space-y-4">
           <label className="dash-field">
-            <span>Base price per night (USD)</span>
+            <span>{tList("fields.basePrice")}</span>
             <input type="number" className="input-premium" value={form.pricePerNight} onChange={(e) => setForm({ ...form, pricePerNight: Number(e.target.value) })} />
           </label>
-          <p className="text-sm text-[var(--foreground-muted)]">Commission rate: {(form.commissionRate * 100).toFixed(0)}% — marketplace fee applied on booking.</p>
-          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ pricePerNight: form.pricePerNight })}>Save pricing</button>
+          <p className="text-sm text-[var(--foreground-muted)]">
+            Commission: {(form.commissionRate * 100).toFixed(0)}%
+          </p>
+          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ pricePerNight: form.pricePerNight })}>
+            {t("savePricing")}
+          </button>
         </div>
       )}
 
-      {tab === "Availability" && (
+      {tab === "availability" && (
         <div className="dash-panel space-y-4">
-          <p className="text-sm text-[var(--foreground-muted)]">Block dates and control inventory — full calendar sync in production.</p>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs">
-            {Array.from({ length: 28 }, (_, i) => (
-              <button key={i} type="button" className="rounded-md border border-[var(--border)] py-2 hover:bg-[var(--surface-muted)]">
-                {i + 1}
-              </button>
-            ))}
-          </div>
           <label className="dash-field">
-            <span>Cancellation policy</span>
+            <span>{tList("fields.minNights")}</span>
+            <input
+              type="number"
+              min={1}
+              className="input-premium w-32"
+              value={form.metadata?.minNights ?? 1}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  metadata: { ...form.metadata, propertyType, minNights: Number(e.target.value) },
+                })
+              }
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={form.metadata?.instantBooking ?? false}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  metadata: { ...form.metadata, propertyType, instantBooking: e.target.checked },
+                })
+              }
+            />
+            {tList("fields.instantBooking")}
+          </label>
+          <label className="dash-field">
+            <span>{tList("fields.cancellationPolicy")}</span>
             <textarea className="input-premium" rows={3} value={form.cancellationPolicy} onChange={(e) => setForm({ ...form, cancellationPolicy: e.target.value })} />
           </label>
-          <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ cancellationPolicy: form.cancellationPolicy })}>Save policy</button>
+          <button
+            type="button"
+            className="btn-primary"
+            disabled={saving}
+            onClick={() =>
+              save({
+                cancellationPolicy: form.cancellationPolicy,
+                metadata: {
+                  ...form.metadata,
+                  propertyType,
+                  minNights: form.metadata?.minNights ?? 1,
+                  instantBooking: form.metadata?.instantBooking ?? false,
+                },
+              })
+            }
+          >
+            {t("savePolicy")}
+          </button>
         </div>
       )}
 
-      <div className="mt-6 flex gap-3">
-        {form.status === "draft" && (
-          <button type="button" className="btn-primary" onClick={publish}>Submit for review</button>
+      <div className="mt-6 flex flex-wrap gap-3">
+        {form.status === "published" ? (
+          <button type="button" className="btn-secondary" disabled={saving} onClick={() => save({ status: "draft" })}>
+            {t("unpublish")}
+          </button>
+        ) : (
+          <>
+            <button type="button" className="btn-primary" disabled={saving} onClick={() => save({ status: "published" })}>
+              {t("publish")}
+            </button>
+            {form.status === "draft" && (
+              <button type="button" className="btn-secondary" disabled={saving} onClick={() => save({ status: "pending_review" })}>
+                {t("submitReview")}
+              </button>
+            )}
+          </>
         )}
-        <Link href="/host/listings" className="btn-ghost">← Back</Link>
+        <Link href="/host/listings" className="btn-ghost">
+          ← {t("back")}
+        </Link>
       </div>
     </DashboardShell>
   );
-}
-
-function formatCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 }

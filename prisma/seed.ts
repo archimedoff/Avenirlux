@@ -39,7 +39,7 @@ async function main() {
         slug,
         description:
           "Sunlit interiors, private terrace, and discreet concierge service in the heart of the city.",
-        propertyType: "boutique_stay",
+        propertyType: "resort_villa",
         status: "published",
         published: true,
         publishedAt: new Date(),
@@ -57,7 +57,7 @@ async function main() {
         coverImage:
           "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80",
         featured: true,
-        categories: ["boutique_stay", "resort"],
+        categories: ["resort_villa", "resort"],
       },
     });
     await prisma.propertyImage.create({

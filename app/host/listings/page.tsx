@@ -7,7 +7,10 @@ import { listingsRepository } from "@/lib/db/repositories/listings-repository";
 
 export default async function HostListingsPage() {
   const session = await auth();
-  if (!session?.user?.id || !canAccessHost(session.user.role)) redirect("/auth?callbackUrl=/host/listings");
+  if (!session?.user?.id) redirect("/auth?callbackUrl=/host/listings");
   const listings = await listingsRepository.listByOwner(session.user.id);
+  if (!canAccessHost(session.user.role) && listings.length === 0) {
+    redirect("/auth?callbackUrl=/host/listings");
+  }
   return <HostListingsClient listings={listings} />;
 }

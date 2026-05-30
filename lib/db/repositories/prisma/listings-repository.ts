@@ -8,6 +8,7 @@ import {
   type PropertyWithRelations,
 } from "@/lib/db/mappers/property-mapper";
 import type { ListingMetadata } from "@/lib/listing/types";
+import { sanitizeImageUrls } from "@/lib/storage/upload-property-image";
 
 const include = {
   images: { orderBy: { sortOrder: "asc" as const } },
@@ -33,7 +34,9 @@ async function syncAmenities(propertyId: string, amenityIds: string[]) {
 
 async function syncImages(propertyId: string, coverImage: string, gallery: string[]) {
   await prisma.propertyImage.deleteMany({ where: { propertyId } });
-  const urls = [coverImage, ...gallery.filter((u) => u && u !== coverImage)].filter(Boolean);
+  const safeCover = sanitizeImageUrls([coverImage])[0] ?? "";
+  const safeGallery = sanitizeImageUrls(gallery);
+  const urls = [safeCover, ...safeGallery.filter((u) => u && u !== safeCover)].filter(Boolean);
   if (!urls.length) return;
   await prisma.propertyImage.createMany({
     data: urls.map((url, index) => ({
@@ -144,36 +147,38 @@ export class PrismaListingsRepository implements ListingsRepository {
 
     const meta = (patch.metadata ?? existing.metadataJson ?? {}) as ListingMetadata;
     const nextStatus = patch.status ? appStatusToPrisma(patch.status) : existing.status;
-    const published =
-      patch.status === "published" || (patch as { published?: boolean }).published === true
-        ? true
-        : patch.status === "draft"
-          ? false
-          : existing.published;
+    const goingLive = patch.status === "published";
+    const goingDraft = patch.status === "draft" || patch.status === "pending_review";
+    const published = goingLive ? true : goingDraft ? false : existing.published;
+    const propertyType = meta.propertyType ?? existing.propertyType;
 
     const updated = await prisma.property.update({
       where: { id },
       data: {
         title: patch.name ?? existing.title,
         description: patch.description ?? existing.description,
+        propertyType: propertyType as never,
         city: patch.city ?? existing.city,
         country: patch.country ?? existing.country,
         address: meta.address ?? patch.location ?? existing.address,
         district: meta.district ?? patch.location ?? existing.district,
-        coverImage: patch.image ?? existing.coverImage,
+        coverImage: patch.image !== undefined ? sanitizeImageUrls([patch.image])[0] ?? "" : existing.coverImage,
         basePrice: patch.pricePerNight ?? existing.basePrice,
         cancellationPolicy: patch.cancellationPolicy ?? existing.cancellationPolicy,
         categories: patch.categories ?? existing.categories,
         roomsJson: (patch.rooms ?? existing.roomsJson) as object,
         metadataJson: (Object.keys(meta).length ? meta : existing.metadataJson) as object,
+        unavailableDates: meta.unavailableDates ?? existing.unavailableDates,
+        minNights: meta.minNights ?? existing.minNights,
+        instantBooking: meta.instantBooking ?? existing.instantBooking,
         status: nextStatus,
         published: published && nextStatus === "published",
         publishedAt:
           published && nextStatus === "published"
             ? existing.publishedAt ?? new Date()
-            : nextStatus === "published"
-              ? existing.publishedAt
-              : null,
+            : goingDraft
+              ? null
+              : existing.publishedAt,
       },
     });
 

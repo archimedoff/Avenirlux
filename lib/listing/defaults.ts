@@ -2,7 +2,7 @@ import type { ListingFormState } from "@/lib/listing/types";
 
 export function createInitialListingForm(): ListingFormState {
   return {
-    propertyType: "residence",
+    propertyType: "apartment",
     name: "",
     tagline: "",
     shortDescription: "",

@@ -1966,3 +1966,112 @@ html {
 .list-wizard {
   width: 100%;
 }
+
+/* Property photo uploader */
+.photo-uploader__notice {
+  font-size: 0.8125rem;
+  color: var(--foreground-muted);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface-muted);
+}
+.photo-uploader__error {
+  font-size: 0.875rem;
+  color: #991b1b;
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+.photo-dropzone--disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.photo-dropzone__inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+.photo-dropzone__icon {
+  font-size: 1.25rem;
+  color: var(--foreground-subtle);
+  margin-bottom: 0.25rem;
+}
+.photo-dropzone__title {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+.photo-dropzone__hint,
+.photo-dropzone__count {
+  font-size: 0.75rem;
+  color: var(--foreground-muted);
+}
+.photo-upload-queue {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.photo-upload-queue__item {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.photo-upload-queue__bar {
+  height: 3px;
+  border-radius: 999px;
+  background: var(--surface-muted);
+  overflow: hidden;
+}
+.photo-upload-queue__fill {
+  height: 100%;
+  background: var(--luxury-ink);
+  transition: width 0.2s var(--ease-luxury);
+}
+.photo-preview--cover {
+  grid-column: span 2;
+  aspect-ratio: 16/10;
+}
+@media (min-width: 640px) {
+  .photo-preview--cover {
+    grid-column: span 2;
+  }
+}
+.photo-preview__actions {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 0.35rem;
+  opacity: 0;
+  transition: opacity 0.25s var(--ease-luxury);
+  background: linear-gradient(to top, rgba(0,0,0,0.45), transparent 50%);
+}
+.photo-preview:hover .photo-preview__actions {
+  opacity: 1;
+}
+.photo-preview__action {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.92);
+  color: var(--luxury-ink);
+}
+.photo-preview__remove--cover {
+  top: 0.35rem;
+  right: 0.35rem;
+}

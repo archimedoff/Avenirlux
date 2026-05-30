@@ -31,10 +31,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.role = (user as { role?: import("@/lib/db/types").UserRole }).role;
         return token;
       }
-      if (token.id && !token.role) {
+      if (token.id) {
         const dbUser = await userRepository.findById(token.id as string);
         if (dbUser) {
           token.role = resolveRole(dbUser.email, dbUser.role ?? "guest");
+          token.firstName = dbUser.firstName;
+          token.lastName = dbUser.lastName;
         }
       }
       return token;

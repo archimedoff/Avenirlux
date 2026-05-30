@@ -58,6 +58,37 @@ export class PrismaBookingRequestsRepository {
     return toRequest(updated);
   }
 
+  async createRequest(input: {
+    propertyId: string;
+    hostId: string;
+    guestUserId?: string;
+    guestName: string;
+    guestEmail: string;
+    checkIn: string;
+    checkOut: string;
+    guests: number;
+    roomName: string;
+    total: number;
+  }) {
+    const row = await prisma.booking.create({
+      data: {
+        kind: "host_request",
+        status: "pending",
+        propertyId: input.propertyId,
+        hostId: input.hostId,
+        guestUserId: input.guestUserId,
+        guestName: input.guestName,
+        guestEmail: input.guestEmail,
+        checkIn: input.checkIn,
+        checkOut: input.checkOut,
+        guests: input.guests,
+        roomName: input.roomName,
+        total: input.total,
+      },
+    });
+    return toRequest(row);
+  }
+
   async seedIfEmpty(ownerId: string, listingId: string) {
     const existing = await this.listByOwner(ownerId);
     if (existing.length) return existing;

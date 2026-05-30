@@ -1,13 +1,11 @@
 export const PROPERTY_TYPES = [
   { id: "hotel", icon: "🏨", labelKey: "hotel" },
   { id: "apartment", icon: "🏢", labelKey: "apartment" },
-  { id: "studio", icon: "🛋️", labelKey: "studio" },
   { id: "villa", icon: "🏡", labelKey: "villa" },
+  { id: "studio", icon: "🛋️", labelKey: "studio" },
   { id: "penthouse", icon: "🌆", labelKey: "penthouse" },
-  { id: "residence", icon: "🏛️", labelKey: "residence" },
-  { id: "cabin", icon: "🌲", labelKey: "cabin" },
-  { id: "beach_house", icon: "🏖️", labelKey: "beach_house" },
-  { id: "boutique_stay", icon: "✨", labelKey: "boutique_stay" },
+  { id: "guest_house", icon: "🏠", labelKey: "guest_house" },
+  { id: "resort_villa", icon: "🌴", labelKey: "resort_villa" },
 ] as const;
 
 export type PropertyType = (typeof PROPERTY_TYPES)[number]["id"];
@@ -75,7 +73,7 @@ export type ListingFormState = {
   instantBooking: boolean;
   cancellationPolicy: string;
   rooms: ListingRoom[];
-  status: "draft" | "pending_review";
+  status: "draft" | "pending_review" | "published";
 };
 
 export type ListingMetadata = {

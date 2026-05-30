@@ -14,6 +14,7 @@ import { StepLocation } from "@/components/list-property/steps/step-location";
 import { StepPhotos } from "@/components/list-property/steps/step-photos";
 import { StepPricing } from "@/components/list-property/steps/step-pricing";
 import { StepReview } from "@/components/list-property/steps/step-review";
+import { clearPhotoDraft } from "@/components/list-property/photo-uploader";
 import { StepType } from "@/components/list-property/steps/step-type";
 import { WIZARD_STEP_KEYS, WizardNav } from "@/components/list-property/wizard-nav";
 import { createInitialListingForm } from "@/lib/listing/defaults";
@@ -75,6 +76,7 @@ export function ListPropertyWizard() {
       return;
     }
     const data = await res.json();
+    clearPhotoDraft();
     router.push(`/host/listings/${data.listing.id}`);
   };
 

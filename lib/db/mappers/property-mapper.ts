@@ -14,11 +14,9 @@ const PROPERTY_TYPE_TO_HOTEL: Record<string, HotelTypeLabel> = {
   apartment: "Residence",
   studio: "Boutique",
   villa: "Villa",
-  residence: "Residence",
-  boutique_stay: "Boutique",
   penthouse: "Residence",
-  cabin: "Boutique",
-  beach_house: "Villa",
+  guest_house: "Boutique",
+  resort_villa: "Villa",
 };
 
 function prismaStatusToApp(status: ListingStatus): AppListingStatus {
@@ -27,6 +25,10 @@ function prismaStatusToApp(status: ListingStatus): AppListingStatus {
 
 function appStatusToPrisma(status?: AppListingStatus): ListingStatus {
   return (status ?? "draft") as ListingStatus;
+}
+
+function amenityIds(rows: PropertyWithRelations["amenities"]): string[] {
+  return rows.map((r) => r.amenityId);
 }
 
 function amenityLabels(rows: PropertyWithRelations["amenities"]): string[] {
@@ -56,7 +58,7 @@ export function propertyToHostListing(property: PropertyWithRelations): HostList
     description: property.description,
     image: property.coverImage || galleryUrls(property)[0] || "",
     gallery: galleryUrls(property),
-    amenities: amenityLabels(property.amenities),
+    amenities: amenityIds(property.amenities),
     categories: property.categories.length ? property.categories : [property.propertyType],
     pricePerNight: property.basePrice,
     rooms,
